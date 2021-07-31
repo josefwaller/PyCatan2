@@ -18,3 +18,12 @@ class Coords:
 
     def __eq__(self, other):
         return self.q == other.q and self.r == other.r
+
+    def __add__(self, other):
+        return Coords(self.q + other.q, self.r + other.r)
+
+    def __str__(self):
+        return "(q: %d, r:%d)" % (self.q, self.r)
+
+    def __repr__(self):
+        return self.__str__()

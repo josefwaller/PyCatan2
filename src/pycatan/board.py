@@ -1,7 +1,9 @@
 from typing import Dict
+from itertools import product
 
 from .coords import Coords
 from .hex import Hex
+from .corner import Corner
 
 
 class Board:
@@ -13,21 +15,33 @@ class Board:
 
     Args:
             hexes (dict[Coords, Hex]):
-                The hexes on the board, keyed by their coordinates
+                    The hexes on the board, keyed by their coordinates
             harbors (dict[set[Coord, Coord], Harbor]):
-                The harbors on the board, keyed by the two corners they are attached to
+                    The harbors on the board, keyed by the two corners they are attached to
 
     Attributes:
             hexes dict[Coord, Hex]:
-                The hexes on this catan board, keyed by their coordinates
+                    The hexes on this catan board, keyed by their coordinates
             corners: (dict[Coords, Corner]):
-                The corners on the board, keyed by their coordinates
+                    The corners on the board, keyed by their coordinates
             edges: (dict[frozenset[Coords, Coords], Edge]):
-                The edges on the board, keyed by the coordinates of the two corners they connect
+                    The edges on the board, keyed by the coordinates of the two corners they connect
             harbors (dict[set[Coord, Coord], Harbor]):
-                The harbors on the board, keyed by the two corners they are attached to
+                    The harbors on the board, keyed by the two corners they are attached to
     """
 
     def __init__(self, hexes: Dict[Coords, Hex], harbors={}):
         self.hexes = hexes
         self.harbors = harbors
+        # Gather the points around each hex into a set
+        corner_coords = set(
+            map(
+                lambda x: x[0] + x[1],
+                list(product(*[hexes.keys(), Hex.CONNECTED_CORNER_OFFSETS])),
+            )
+        )
+        # Add the corners to self.corners
+        self.corners = {}
+        for coords in corner_coords:
+            self.corners[coords] = Corner(coords)
+        self.edges = {}
