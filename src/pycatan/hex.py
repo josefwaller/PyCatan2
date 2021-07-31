@@ -10,12 +10,14 @@ class Hex:
     Args:
         coords (Coords): The coordinates of this hex
         hex_type (HexType): The type of this hex
+        token_number (int, optional): The number of the token on this hex, or None if the hext is a desert
 
     Attributes:
         CONNECTED_POINTS_OFFSETS (Set[Coords]):
                 The offsets of the connected points from a hex's coordinates
         coords (Coords): The coordinates of this hex
         hex_type (HexType): The type of this hex
+        token_number (int): The number of the token on this hex
     """
 
     CONNECTED_CORNER_OFFSETS: Set[Coords] = {
@@ -27,6 +29,7 @@ class Hex:
         Coords(1, -1),
     }
 
-    def __init__(self, coords: Coords, hex_type: HexType):
+    def __init__(self, coords: Coords, hex_type: HexType, token_number: int):
         self.coords = coords
         self.hex_type = hex_type
+        self.token_number = token_number

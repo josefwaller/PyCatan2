@@ -20,7 +20,7 @@ SMALL_BOARD_COORDS = {
 def generate_board_from_hex_coords(coords: Set[Coords]):
     hexes = {}
     for c in coords:
-        hexes[c] = Hex(c, HexType.FOREST)
+        hexes[c] = Hex(c, HexType.FOREST, 6)
     return Board(hexes)
 
 
