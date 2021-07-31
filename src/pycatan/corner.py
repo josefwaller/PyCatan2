@@ -7,10 +7,10 @@ class Corner:
     """A corner on the Catan board
 
     Args:
-            coords (Coords):
-                    The coordinates of the corner
-            building (CornerBuilding, optional):
-                    The building on the corner
+        coords (Coords):
+                The coordinates of the corner
+        building (CornerBuilding, optional):
+                The building on the corner
 
     Attributes:
             CONNECTED_CORNER_OFFSETS (Set[Coords]):

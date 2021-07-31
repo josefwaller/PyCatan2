@@ -1,10 +1,16 @@
 from typing import Set
+import pytest
 
 from pycatan.board import Board, BeginnerBoard
 from pycatan.coords import Coords
 from pycatan.hex import Hex, HexType
 from pycatan.building_type import BuildingType
 from pycatan.player import Player
+from pycatan.errors import (
+    InvalidCoordsError,
+    TooCloseToBuildingError,
+    CoordsBlockedError,
+)
 
 ONE_HEX_COORDS = {Coords(0, 0)}
 SMALL_BOARD_COORDS = {
@@ -95,9 +101,46 @@ def test_board_properly_keys_edges():
         assert edge.coords == set(key)
 
 
+def test_cannot_build_in_middle_of_hex():
+    board = BeginnerBoard()
+    player = Player()
+    with pytest.raises(InvalidCoordsError):
+        board.add_settlement(player, Coords(0, 0))
+
+
+def test_cannot_build_on_top_of_settlement():
+    board = BeginnerBoard()
+    player = Player()
+    with pytest.raises(CoordsBlockedError):
+        board.add_settlement(player, Coords(1, -1))
+        board.add_settlement(player, Coords(1, -1))
+
+
+def test_cannot_build_too_close_to_settlement():
+    board = BeginnerBoard()
+    player = Player()
+    with pytest.raises(TooCloseToBuildingError):
+        board.add_settlement(player, Coords(-2, 2))
+        board.add_settlement(player, Coords(-3, 2))
+
+
 def test_can_add_settlement():
     board = BeginnerBoard()
     player = Player()
     board.add_settlement(player, Coords(1, 0))
     assert board.corners[Coords(1, 0)].building is not None
     assert board.corners[Coords(1, 0)].building.building_type == BuildingType.SETTLEMENT
+
+
+def test_get_connected_corners():
+    board = BeginnerBoard()
+    assert board.get_corner_connected_corners(board.corners[Coords(1, -1)]) == {
+        board.corners[Coords(2, -2)],
+        board.corners[Coords(0, -1)],
+        board.corners[Coords(1, 0)],
+    }
+    assert board.get_corner_connected_corners(board.corners[Coords(-3, 2)]) == {
+        board.corners[Coords(-2, 2)],
+        board.corners[Coords(-3, 1)],
+        board.corners[Coords(-4, 3)],
+    }

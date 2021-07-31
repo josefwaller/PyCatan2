@@ -9,6 +9,7 @@ from .edge import Edge
 from .player import Player
 from .building import CornerBuilding
 from .building_type import BuildingType
+from .errors import InvalidCoordsError, TooCloseToBuildingError, CoordsBlockedError
 
 
 class Board:
@@ -69,9 +70,47 @@ class Board:
                 TooCloseToBuildingError: If the building is too close to another
                 PositionAlreadyTakenError: If the position is already taken
         """
-        self.corners[coords].building = CornerBuilding(
-            owner, BuildingType.SETTLEMENT, coords
-        )
+        if coords not in self.corners.keys():
+            raise InvalidCoordsError("coords must be the coordinates of a corner")
+
+        elif self.corners[coords].building is not None:
+            print(self.corners[coords].building)
+            raise CoordsBlockedError("There is already a building on this corner")
+
+        elif (
+            len(
+                set(
+                    filter(
+                        lambda c: c.building is not None,
+                        self.get_corner_connected_corners(self.corners[coords]),
+                    )
+                )
+            )
+            > 0
+        ):
+            raise TooCloseToBuildingError(
+                "There is a building that is not at least 2 edges away from this position"
+            )
+
+        else:
+            self.corners[coords].building = CornerBuilding(
+                owner, BuildingType.SETTLEMENT, coords
+            )
+
+    def get_corner_connected_corners(self, corner) -> Set[Corner]:
+        """Get the corners connected to the corner given by an edge
+
+        Args:
+                corner (Corner): The corner to get the connected corners for
+
+        Returns:
+                Set[Corner]: The corners that are connected to the corner given
+        """
+        connected = set()
+        for c in Corner.CONNECTED_CORNER_OFFSETS:
+            if c + corner.coords in self.corners.keys():
+                connected.add(self.corners[c + corner.coords])
+        return connected
 
 
 class BeginnerBoard(Board):

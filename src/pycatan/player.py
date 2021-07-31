@@ -1,6 +1,7 @@
 from typing import Dict
 
 from .resource import Resource
+from .errors import NotEnoughResourcesError
 
 
 class Player:
@@ -39,8 +40,10 @@ class Player:
                 NotEnoughResourcesError: If the player does not have the resources
         """
         if not self.has_resources(resources):
-            # TBA
-            pass
+            raise NotEnoughResourcesError(
+                "The player does not have the resources to remove"
+            )
+
         for res, num in resources.items():
             self.resources[res] -= num
 

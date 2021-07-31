@@ -1,5 +1,8 @@
+import pytest
+
 from pycatan.player import Player
 from pycatan.resource import Resource
+from pycatan.errors import NotEnoughResourcesError
 
 
 def test_player_starts_with_empty_hand():
@@ -75,3 +78,13 @@ def test_player_has_resources():
             Resource.GRAIN: 5,
         }
     )
+
+
+def test_player_remove_resources_should_raise():
+    p = Player()
+    with pytest.raises(NotEnoughResourcesError):
+        p.remove_resources({Resource.LUMBER: 1})
+
+    p.add_resources({Resource.LUMBER: 3, Resource.GRAIN: 2})
+    with pytest.raises(NotEnoughResourcesError):
+        p.remove_resources({Resource.LUMBER: 3, Resource.GRAIN: 3})
