@@ -3,6 +3,7 @@ from typing import Set
 from pycatan.board import Board
 from pycatan.coords import Coords
 from pycatan.hex import Hex
+from pycatan.hex import HexType
 
 ONE_HEX_COORDS = {Coords(0, 0)}
 SMALL_BOARD_COORDS = {
@@ -19,7 +20,7 @@ SMALL_BOARD_COORDS = {
 def generate_board_from_hex_coords(coords: Set[Coords]):
     hexes = {}
     for c in coords:
-        hexes[c] = Hex(c)
+        hexes[c] = Hex(c, HexType.FOREST)
     return Board(hexes)
 
 
