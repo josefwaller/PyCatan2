@@ -1,9 +1,10 @@
 from typing import Set
 
-from pycatan.board import Board
+from pycatan.board import Board, BeginnerBoard
 from pycatan.coords import Coords
-from pycatan.hex import Hex
-from pycatan.hex import HexType
+from pycatan.hex import Hex, HexType
+from pycatan.building_type import BuildingType
+from pycatan.player import Player
 
 ONE_HEX_COORDS = {Coords(0, 0)}
 SMALL_BOARD_COORDS = {
@@ -45,12 +46,10 @@ def test_board_generates_corners_many_hexes():
             expected_corners.add(hex_coords + offset)
 
     assert set(board.corners.keys()) == expected_corners
-    print(set(board.corners.keys()))
 
 
 def test_board_propery_keys_corners():
     board = generate_board_from_hex_coords(SMALL_BOARD_COORDS)
-    print(board.corners)
     for key, corner in board.corners.items():
         assert key == corner.coords
 
@@ -94,3 +93,11 @@ def test_board_properly_keys_edges():
     board = generate_board_from_hex_coords(SMALL_BOARD_COORDS)
     for key, edge in board.edges.items():
         assert edge.coords == set(key)
+
+
+def test_can_add_settlement():
+    board = BeginnerBoard()
+    player = Player()
+    board.add_settlement(player, Coords(1, 0))
+    assert board.corners[Coords(1, 0)].building is not None
+    assert board.corners[Coords(1, 0)].building.building_type == BuildingType.SETTLEMENT

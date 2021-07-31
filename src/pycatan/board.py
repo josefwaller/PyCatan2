@@ -6,6 +6,9 @@ from .hex import Hex
 from .hex_type import HexType
 from .corner import Corner
 from .edge import Edge
+from .player import Player
+from .building import CornerBuilding
+from .building_type import BuildingType
 
 
 class Board:
@@ -16,20 +19,20 @@ class Board:
     assuming all the hexes tile correctly
 
     Args:
-                                    hexes (Set[Hex]):
-                                                                    The hexes on the board, keyed by their coordinates
-                                    harbors (Dict[set[Coord, Coord], Harbor]):
-                                                                    The harbors on the board, keyed by the two corners they are attached to
+            hexes (Set[Hex]):
+                    The hexes on the board, keyed by their coordinates
+            harbors (Dict[set[Coord, Coord], Harbor]):
+                    The harbors on the board, keyed by the two corners they are attached to
 
     Attributes:
-                                    hexes (Dict[Coord, Hex]):
-                                                                    The hexes on this catan board, keyed by their coordinates
-                                    corners: (Dict[Coords, Corner]):
-                                                                    The corners on the board, keyed by their coordinates
-                                    edges: (Dict[frozenset[Coords, Coords], Edge]):
-                                                                    The edges on the board, keyed by the coordinates of the two corners they connect
-                                    harbors (Dict[Set[Coord, Coord], Harbor]):
-                                                                    The harbors on the board, keyed by the two corners they are attached to
+            hexes (Dict[Coord, Hex]):
+                    The hexes on this catan board, keyed by their coordinates
+            corners: (Dict[Coords, Corner]):
+                    The corners on the board, keyed by their coordinates
+            edges: (Dict[frozenset[Coords, Coords], Edge]):
+                    The edges on the board, keyed by the coordinates of the two corners they connect
+            harbors (Dict[Set[Coord, Coord], Harbor]):
+                    The harbors on the board, keyed by the two corners they are attached to
     """
 
     def __init__(self, hexes: Set[Hex], harbors={}):
@@ -53,6 +56,22 @@ class Board:
                 coord = c + offset
                 if coord in self.corners:
                     self.edges[frozenset([c, c + offset])] = Edge(set([c, c + offset]))
+
+    def add_settlement(self, owner: Player, coords: Coords):
+        """Add a settlement to the board
+
+        Args:
+                player (Player): The player who owns the settlement
+                coords (Coords): The coords to put the building
+
+        Raises:
+                InvalidCoordsError: If `coords` is not a valid corner
+                TooCloseToBuildingError: If the building is too close to another
+                PositionAlreadyTakenError: If the position is already taken
+        """
+        self.corners[coords].building = CornerBuilding(
+            owner, BuildingType.SETTLEMENT, coords
+        )
 
 
 class BeginnerBoard(Board):
