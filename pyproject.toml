@@ -8,9 +8,22 @@ authors = ["Josef Waller <josef@siriusapplications.com>"]
 python = "^3.8"
 flake8 = "^3.9.2"
 black = "^21.7b0"
-pytest = "^6.2.4"
 
 [tool.poetry.dev-dependencies]
+coverage = {extras = ["toml"], version = "^5.5"}
+pytest-cov = "^2.12.1"
+pytest = "^6.2.4"
+
+[tool.coverage.paths]
+source = ["src"]
+
+[tool.coverage.run]
+branch = true
+source = ["pycatan"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
