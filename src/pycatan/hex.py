@@ -2,11 +2,11 @@ class Hex:
     """A hex on a Catan board
 
     Args:
-            coord Coord: The coordinates of this hex
+            coords Coords: The coordinates of this hex
 
     Attributes:
-            coord Coord: The coordinates of this hex
+            coords Coords: The coordinates of this hex
     """
 
-    def __init__(self, coord):
-        self.coord = coord
+    def __init__(self, coords):
+        self.coords = coords

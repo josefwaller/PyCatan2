@@ -1,7 +1,7 @@
 from pycatan.hex import Hex
-from pycatan.coord import Coord
+from pycatan.coords import Coords
 
 
 def test_hex_holds_coords():
-    h = Hex(Coord(1, 2))
-    assert h.coord == Coord(1, 2)
+    h = Hex(Coords(1, 2))
+    assert h.coords == Coords(1, 2)

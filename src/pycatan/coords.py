@@ -1,7 +1,8 @@
-class Coord:
+class Coords:
     """
-    A class used to represent the coordinate on the Catan board. Stores a coordinate on a triangular grid,
-    so that each hex and point both has a unique coord.
+    A class used to represent coordinates on the Catan board.
+    Stores a coordinate on a triangular grid, so that each
+    hex and point both has a unique coord.
 
     Args:
             q (int): The q coordinate
