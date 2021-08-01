@@ -31,21 +31,32 @@ class Board:
                                     The hexes on the board, keyed by their coordinates
                     harbors (Dict[set[Coord, Coord], Harbor]):
                                     The harbors on the board, keyed by the two corners they are attached to
+                    robber (Coords):
+                        The inital coordinates of the robber. If None, then will automatically place the robber on the first
+                        desert hex it can find, and raise an error if there are non
 
     Attributes:
                     hexes (Dict[Coord, Hex]):
                                     The hexes on this catan board, keyed by their coordinates
                     corners: (Dict[Coords, Corner]):
                                     The corners on the board, keyed by their coordinates
-                    edges: (Dict[frozenset[Coords, Coords], Edge]):
+                    edges (Dict[frozenset[Coords, Coords], Edge]):
                                     The edges on the board, keyed by the coordinates of the two corners they connect
                     harbors (Dict[Set[Coord, Coord], Harbor]):
                                     The harbors on the board, keyed by the two corners they are attached to
+                    robber (Set[Coords]): The location of the robber
     """
 
-    def __init__(self, hexes: Set[Hex], harbors={}):
+    def __init__(self, hexes: Set[Hex], harbors={}, robber: Coords = None):
         self.hexes: Dict[Coords, Hex] = dict(zip((h.coords for h in hexes), hexes))
         self.harbors = harbors
+        # Position the robber on the desert
+        if robber:
+            self.robber = robber
+        else:
+            self.robber = [
+                h.coords for h in self.hexes.values() if h.hex_type == HexType.DESERT
+            ][0]
         # Gather the points around each hex into a set
         corner_coords = set(
             map(
@@ -256,7 +267,7 @@ class Board:
     def get_yield_for_roll(self, roll) -> Dict[Player, RollYield]:
         total_yield: Dict[Player, RollYield] = {}
         for hex in self.hexes.values():
-            if hex.token_number == roll:
+            if hex.token_number == roll and self.robber != hex.coords:
                 resource = hex.hex_type.get_resource()
                 # Check around the hex for any settlements/cities
                 for corner in self.get_connected_hex_corners(hex):
@@ -281,6 +292,9 @@ class Board:
                             ),
                         )
         return total_yield
+
+    def is_valid_hex_coords(self, coords):
+        return len(set(filter(lambda x: x == coords, self.hexes.keys()))) != 0
 
 
 class BeginnerBoard(Board):

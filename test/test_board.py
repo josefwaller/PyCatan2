@@ -13,7 +13,7 @@ from pycatan.errors import (
     NotConnectedError,
     RequiresSettlementError,
 )
-from .helpers import get_resource_hand, add_free_city
+from .helpers import get_resource_hand, add_free_settlement, add_free_city
 
 ONE_HEX_COORDS = {Coords(0, 0)}
 SMALL_BOARD_COORDS = {
@@ -31,7 +31,7 @@ def generate_board_from_hex_coords(coords: Set[Coords]):
     hexes = set()
     for c in coords:
         hexes.add(Hex(c, HexType.FOREST, 6))
-    return Board(hexes)
+    return Board(hexes, harbors={}, robber=list(coords)[0])
 
 
 def test_board_generates_corners_one_hex():
@@ -182,6 +182,7 @@ def test_board_get_yield_multiple_hexes():
             Hex(coords=Coords(0, 0), hex_type=HexType.FOREST, token_number=6),
             Hex(coords=Coords(1, 1), hex_type=HexType.FOREST, token_number=6),
             Hex(coords=Coords(-1, 2), hex_type=HexType.HILLS, token_number=6),
+            Hex(coords=Coords(-2, 1), hex_type=HexType.DESERT),
         }
     )
     player = Player()
@@ -303,3 +304,32 @@ def test_city_add_twice_many_cities():
     add_free_city(b, p, Coords(2, -2))
     add_free_city(b, p, Coords(3, -1))
     assert b.get_yield_for_roll(6)[p].total_yield == get_resource_hand(brick=6)
+
+
+def test_robber_stop_yield():
+    b = BeginnerBoard()
+    p = Player()
+    add_free_settlement(b, p, Coords(1, 0))
+    b.robber = Coords(1, 1)
+    assert not b.get_yield_for_roll(4)
+
+
+def test_robber_doesnt_stop_yield_after_leaving():
+    b = BeginnerBoard()
+    p = Player()
+    add_free_settlement(b, p, Coords(1, 0))
+    b.robber = Coords(1, 1)
+    b.robber = Coords(0, 0)
+    assert b.get_yield_for_roll(4)[p].total_yield == get_resource_hand(wool=1)
+
+
+def test_is_valid_hex_coords():
+    b = BeginnerBoard()
+    assert b.is_valid_hex_coords(Coords(0, 0))
+    assert b.is_valid_hex_coords(Coords(1, 1))
+    assert b.is_valid_hex_coords(Coords(2, -1))
+    assert b.is_valid_hex_coords(Coords(-1, -1))
+    assert not b.is_valid_hex_coords(Coords(1, -1))
+    assert not b.is_valid_hex_coords(Coords(2, -2))
+    assert not b.is_valid_hex_coords(Coords(-2, 2))
+    assert not b.is_valid_hex_coords(Coords(-2, 0))

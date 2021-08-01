@@ -143,3 +143,16 @@ class Game:
         """
         for p, y in roll_yield.items():
             p.add_resources(y.total_yield)
+
+    def move_robber(self, coords: Coords):
+        """Moves the robber to the coords specified
+
+        Args:
+            coords (Coords): The coordinates of the hex to move the robber to
+        Raises:
+            ValueError: If the coordinates are not a valid hex
+        """
+        if not self.board.is_valid_hex_coords(coords):
+            raise ValueError("coords is no a valid hex coordinate")
+
+        self.board.robber = coords

@@ -172,3 +172,21 @@ def test_update_city_costs_resources():
     g.upgrade_settlement_to_city(g.players[0], Coords(1, 0))
     assert g.board.corners[Coords(1, 0)].building.building_type == BuildingType.CITY
     assert g.players[0].resources == get_resource_hand(lumber=2, brick=2, grain=1)
+
+
+def test_move_robber_valid():
+    g = Game(BeginnerBoard())
+    g.move_robber(Coords(2, -1))
+    assert g.board.robber == Coords(2, -1)
+
+
+def test_move_robber_invalid_edge():
+    g = Game(BeginnerBoard())
+    with pytest.raises(ValueError):
+        g.move_robber(Coords(1, 0))
+
+
+def test_move_robber_invalid_offboard():
+    g = Game(BeginnerBoard())
+    with pytest.raises(ValueError):
+        g.move_robber(Coords(20, 0))

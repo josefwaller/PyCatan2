@@ -15,8 +15,12 @@ def get_resource_hand(lumber=0, wool=0, brick=0, ore=0, grain=0):
     }
 
 
-def add_free_city(b: Board, p: Player, c: Coords):
+def add_free_settlement(b: Board, p: Player, c: Coords):
     b.add_corner_building(
         p, c, building_type=BuildingType.SETTLEMENT, ensure_connected=False
     )
+
+
+def add_free_city(b: Board, p: Player, c: Coords):
+    add_free_settlement(b, p, c)
     b.add_corner_building(p, c, building_type=BuildingType.CITY)
