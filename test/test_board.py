@@ -19,7 +19,7 @@ from .helpers import (
     add_free_settlement,
     add_free_city,
     add_free_road,
-    add_road_from_path,
+    add_free_road_from_path,
 )
 
 ONE_HEX_COORDS = {Coords(0, 0)}
@@ -409,13 +409,13 @@ def test_get_longest_road_complicated():
         ),
     )
     # Add the first road path
-    add_road_from_path(b, p, road_paths[0])
+    add_free_road_from_path(b, p, road_paths[0])
     assert b.calculate_player_longest_road(p) == 5
     # Add the second path
-    add_road_from_path(b, p, road_paths[1])
+    add_free_road_from_path(b, p, road_paths[1])
     assert b.calculate_player_longest_road(p) == 8
     # Add the third path
-    add_road_from_path(b, p, road_paths[2])
+    add_free_road_from_path(b, p, road_paths[2])
     assert b.calculate_player_longest_road(p) == 10
 
 
@@ -436,14 +436,14 @@ def test_calculate_longest_road_multiple_players():
         (Coords(2, -2), Coords(3, -2), Coords(3, -1), Coords(4, -1), Coords(5, -2)),
     )
     # Add the first road
-    add_road_from_path(b, p1, road_paths[0])
+    add_free_road_from_path(b, p1, road_paths[0])
     assert b.calculate_player_longest_road(p1) == 5
     assert b.calculate_player_longest_road(p2) == 0
     # Add the second path
-    add_road_from_path(b, p2, road_paths[1])
+    add_free_road_from_path(b, p2, road_paths[1])
     assert b.calculate_player_longest_road(p1) == 5
     assert b.calculate_player_longest_road(p2) == 4
     # Add the third path
-    add_road_from_path(b, p2, road_paths[2])
+    add_free_road_from_path(b, p2, road_paths[2])
     assert b.calculate_player_longest_road(p1) == 5
     assert b.calculate_player_longest_road(p2) == 6

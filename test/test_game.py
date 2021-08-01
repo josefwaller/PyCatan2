@@ -10,7 +10,7 @@ from pycatan.board import BeginnerBoard
 from pycatan.building_type import BuildingType
 from pycatan.errors import NotEnoughResourcesError
 
-from .helpers import get_resource_hand
+from .helpers import get_resource_hand, build_road_along_path
 
 
 def get_roll_yield(lumber=0, brick=0, grain=0, ore=0, wool=0):
@@ -190,3 +190,37 @@ def test_move_robber_invalid_offboard():
     g = Game(BeginnerBoard())
     with pytest.raises(ValueError):
         g.move_robber(Coords(20, 0))
+
+
+def test_can_get_longest_road():
+    g = Game(BeginnerBoard())
+    assert g.longest_road_owner is None
+    g.players[0].add_resources(get_resource_hand(lumber=3, brick=3))
+    coords = (Coords(1, 0), Coords(0, 1), Coords(0, 2), Coords(-1, 3))
+    g.build_road(
+        g.players[0], edge_coords={coords[0], coords[1]}, ensure_connected=False
+    )
+    assert g.longest_road_owner is None
+    g.build_road(g.players[0], edge_coords={coords[1], coords[2]})
+    assert g.longest_road_owner is None
+    g.build_road(g.players[0], edge_coords={coords[2], coords[3]})
+    assert g.longest_road_owner is g.players[0]
+
+
+def test_can_steal_longest_road():
+    g = Game(BeginnerBoard())
+    paths = (
+        (Coords(1, 0), Coords(0, 1), Coords(0, 2), Coords(-1, 3)),
+        (Coords(-3, 1), Coords(-3, 2), Coords(-2, 2), Coords(-2, 3)),
+        (Coords(-3, 1), Coords(-2, 0)),
+    )
+    g.players[0].add_resources(get_resource_hand(lumber=3, brick=3))
+    g.players[1].add_resources(get_resource_hand(lumber=4, brick=4))
+    build_road_along_path(g, g.players[0], paths[0])
+    assert g.longest_road_owner is g.players[0]
+    # Being tied for longest doesn't take away longest road
+    build_road_along_path(g, g.players[1], paths[1])
+    assert g.longest_road_owner is g.players[0]
+    # But you can steal it
+    build_road_along_path(g, g.players[1], paths[2])
+    assert g.longest_road_owner is g.players[1]

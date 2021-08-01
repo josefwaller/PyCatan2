@@ -1,5 +1,6 @@
 from typing import Set
 
+from pycatan.game import Game
 from pycatan.resource import Resource
 from pycatan.board import Board
 from pycatan.player import Player
@@ -53,6 +54,12 @@ def get_trades(resource, trade_amount):
     return [{resource: -trade_amount, res: 1} for res in Resource if res != resource]
 
 
-def add_road_from_path(b: Board, p: Player, path: Set[Coords]):
+def build_road_along_path(g: Game, p: Player, path: Set[Coords]):
+    """This method charges the player for all the roads"""
+    for i in range(len(path) - 1):
+        g.build_road(p, edge_coords={path[i], path[i + 1]}, ensure_connected=i != 0)
+
+
+def add_free_road_from_path(b: Board, p: Player, path: Set[Coords]):
     for i in range(len(path) - 1):
         add_free_road(b, p, {path[i], path[i + 1]})

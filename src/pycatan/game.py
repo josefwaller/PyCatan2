@@ -16,12 +16,15 @@ class Game:
 
     Attributes:
             board (Board): The Catan board being used in this game
-            players: List[Player]: The players in the game, ordered by (recommended) turn order
+            players (List[Player]): The players in the game, ordered by (recommended) turn order
+            longest_road_owner (Player): The player who has the longest road token, or None if no players
+                have a road of at least 3 length
     """
 
     def __init__(self, board, num_players=4):
         self.board = board
         self.players = [Player() for i in range(num_players)]
+        self.longest_road_owner = None
 
     def build_settlement(
         self,
@@ -95,6 +98,15 @@ class Game:
         # Remove the resources
         if cost_resources:
             player.remove_resources(BuildingType.ROAD.get_required_resources())
+
+        # Check if the player gets longest road
+        road_length = self.board.calculate_player_longest_road(player)
+        if road_length >= 3 and (
+            self.longest_road_owner is None
+            or road_length
+            > self.board.calculate_player_longest_road(self.longest_road_owner)
+        ):
+            self.longest_road_owner = player
 
     def upgrade_settlement_to_city(
         self, player: Player, coords: Coords, cost_resources: bool = True
