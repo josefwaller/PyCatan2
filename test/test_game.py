@@ -32,7 +32,8 @@ def test_game_allows_variable_players():
 
 def test_game_add_yield_for_roll():
     g = Game(BeginnerBoard())
-    g.board.add_settlement(g.players[0], Coords(-2, 0))
+    g.players[0].add_resources(BuildingType.SETTLEMENT.get_required_resources())
+    g.build_settlement(g.players[0], Coords(-2, 0))
     g.add_yield_for_roll(6)
     assert g.players[0].has_resources({Resource.GRAIN: 1})
     g.add_yield_for_roll(4)

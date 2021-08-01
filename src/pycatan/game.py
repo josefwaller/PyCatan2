@@ -29,7 +29,7 @@ class Game:
                 "Player does not have enough resources to build a settlement"
             )
         else:
-            self.board.add_settlement(player, coords)
+            self.board.add_corner_building(player, coords, BuildingType.SETTLEMENT)
 
     def add_yield_for_roll(self, roll) -> None:
         """Compute what resources players would receive if `roll` was rolled, and

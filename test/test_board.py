@@ -116,29 +116,29 @@ def test_cannot_build_in_middle_of_hex():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(InvalidCoordsError):
-        board.add_settlement(player, Coords(0, 0))
+        board.add_corner_building(player, Coords(0, 0), BuildingType.SETTLEMENT)
 
 
 def test_cannot_build_on_top_of_settlement():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(CoordsBlockedError):
-        board.add_settlement(player, Coords(1, -1))
-        board.add_settlement(player, Coords(1, -1))
+        board.add_corner_building(player, Coords(1, -1), BuildingType.SETTLEMENT)
+        board.add_corner_building(player, Coords(1, -1), BuildingType.SETTLEMENT)
 
 
 def test_cannot_build_too_close_to_settlement():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(TooCloseToBuildingError):
-        board.add_settlement(player, Coords(-2, 2))
-        board.add_settlement(player, Coords(-3, 2))
+        board.add_corner_building(player, Coords(-2, 2), BuildingType.SETTLEMENT)
+        board.add_corner_building(player, Coords(-3, 2), BuildingType.SETTLEMENT)
 
 
 def test_can_add_settlement():
     board = BeginnerBoard()
     player = Player()
-    board.add_settlement(player, Coords(1, 0))
+    board.add_corner_building(player, Coords(1, 0), BuildingType.SETTLEMENT)
     assert board.corners[Coords(1, 0)].building is not None
     assert board.corners[Coords(1, 0)].building.building_type == BuildingType.SETTLEMENT
 
@@ -160,7 +160,9 @@ def test_get_connected_corners():
 def test_board_get_yield():
     board = BeginnerBoard()
     player = Player()
-    board.add_settlement(player, coords=Coords(2, 0))
+    board.add_corner_building(
+        player, coords=Coords(2, 0), building_type=BuildingType.SETTLEMENT
+    )
     assert board.get_yield_for_roll(6)[player].total_yield == get_yield(brick=1)
     assert board.get_yield_for_roll(2)[player].total_yield == get_yield(wool=1)
     assert board.get_yield_for_roll(4)[player].total_yield == get_yield(wool=1)
@@ -175,7 +177,9 @@ def test_board_get_yield_multiple_hexes():
         }
     )
     player = Player()
-    board.add_settlement(player, coords=Coords(0, 1))
+    board.add_corner_building(
+        player, coords=Coords(0, 1), building_type=BuildingType.SETTLEMENT
+    )
     assert board.get_yield_for_roll(6)[player].total_yield == get_yield(
         lumber=2, brick=1
     )

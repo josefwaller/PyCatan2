@@ -9,7 +9,12 @@ from .edge import Edge
 from .player import Player
 from .building import CornerBuilding
 from .building_type import BuildingType
-from .errors import InvalidCoordsError, TooCloseToBuildingError, CoordsBlockedError
+from .errors import (
+    InvalidCoordsError,
+    TooCloseToBuildingError,
+    CoordsBlockedError,
+    RequiresSettlementError,
+)
 from .roll_yield import RollYield, RollYieldSource
 
 
@@ -59,7 +64,9 @@ class Board:
                 if coord in self.corners:
                     self.edges[frozenset([c, c + offset])] = Edge(set([c, c + offset]))
 
-    def add_settlement(self, owner: Player, coords: Coords):
+    def add_corner_building(
+        self, owner: Player, coords: Coords, building_type: BuildingType
+    ):
         """Add a settlement to the board. Does not check if the player has enough cards.
 
         Args:
@@ -68,34 +75,64 @@ class Board:
 
         Raises:
                         InvalidCoordsError: If `coords` is not a valid corner
-                        TooCloseToBuildingError: If the building is too close to another
+                        TooCloseToBuildingError: If the building is too close to another building
                         PositionAlreadyTakenError: If the position is already taken
         """
+        if building_type == BuildingType.SETTLEMENT:
+            self.assert_valid_settlement_coords(coords)
+        elif building_type == BuildingType.CITY:
+            self.assert_valid_settlement_coords(coords)
+        else:
+            raise ValueError(
+                "Invalid building type passed to Board.add_corner_building, receieved %s"
+                % building_type
+            )
+
+        self.corners[coords].building = CornerBuilding(
+            owner, BuildingType.SETTLEMENT, coords
+        )
+
+    def assert_valid_settlement_coords(self, coords: Coords) -> None:
+        """Checks whether the coordinates given are a valid place to build a settlement.
+            Does not return anything, but raises an error if the coordinates are not valid
+        Args:
+            coords (Coords): The coordinates to check
+        Raises:
+            TooCloseToBuildingError: If the building is too close to another building
+            PositionAlreadyTakenError: If the position is already taken
+        """
+        # Check that the coords are referencing a corner
         if coords not in self.corners.keys():
             raise InvalidCoordsError("coords must be the coordinates of a corner")
-
-        elif self.corners[coords].building is not None:
-            print(self.corners[coords].building)
+        # Check that the corner is empty
+        if self.corners[coords].building is not None:
             raise CoordsBlockedError("There is already a building on this corner")
-
-        elif (
-            len(
-                set(
-                    filter(
-                        lambda c: c.building is not None,
-                        self.get_corner_connected_corners(self.corners[coords]),
-                    )
-                )
-            )
-            > 0
-        ):
+        # Check that the surrounding corners are empty
+        connected_corners: Set[Corner] = self.get_corner_connected_corners(
+            self.corners[coords]
+        )
+        if len(set(filter(lambda c: c.building is not None, connected_corners))) > 0:
             raise TooCloseToBuildingError(
                 "There is a building that is not at least 2 edges away from this position"
             )
 
-        else:
-            self.corners[coords].building = CornerBuilding(
-                owner, BuildingType.SETTLEMENT, coords
+    def assert_valid_city_coords(self, player: Player, coords: Coords) -> None:
+        """Checks whether the coordinates given are a valid place to build a city by the player given.
+            Does not return anything, but raises an error
+        Args:
+            player (Player): The player building the city
+            coords (Coords): Where to build the city
+        """
+        # Check the coords are a corner
+        if coords not in self.corners.keys():
+            raise InvalidCoordsError("coords must be the coordinates of a corner")
+        # Check that a settlement owned by player exists here
+        if (
+            self.corners[coords].building is None
+            or self.corners[coords].building.owner is not player
+        ):
+            raise RequiresSettlementError(
+                "You must update an existing settlement owned by the player into a city"
             )
 
     def get_corner_connected_corners(self, corner) -> Set[Corner]:
