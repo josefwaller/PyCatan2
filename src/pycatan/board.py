@@ -8,7 +8,9 @@ from .corner import Corner
 from .edge import Edge
 from .player import Player
 from .building import CornerBuilding, EdgeBuilding
+from .harbor import Harbor
 from .building_type import BuildingType
+from .resource import Resource
 from .errors import (
     InvalidCoordsError,
     TooCloseToBuildingError,
@@ -28,28 +30,28 @@ class Board:
 
     Args:
                     hexes (Set[Hex]):
-                                    The hexes on the board, keyed by their coordinates
-                    harbors (Dict[set[Coord, Coord], Harbor]):
-                                    The harbors on the board, keyed by the two corners they are attached to
+                        The hexes on the board, keyed by their coordinates
+                    harbors (Set[Harbor]):
+                        The harbors on the board
                     robber (Coords):
                         The inital coordinates of the robber. If None, then will automatically place the robber on the first
                         desert hex it can find, and raise an error if there are non
 
     Attributes:
                     hexes (Dict[Coord, Hex]):
-                                    The hexes on this catan board, keyed by their coordinates
+                        The hexes on this catan board, keyed by their coordinates
                     corners: (Dict[Coords, Corner]):
-                                    The corners on the board, keyed by their coordinates
-                    edges (Dict[frozenset[Coords, Coords], Edge]):
-                                    The edges on the board, keyed by the coordinates of the two corners they connect
-                    harbors (Dict[Set[Coord, Coord], Harbor]):
-                                    The harbors on the board, keyed by the two corners they are attached to
+                        The corners on the board, keyed by their coordinates
+                    edges (Dict[frozenset[Coords], Edge]):
+                        The edges on the board, keyed by the coordinates of the two corners they connect
+                    harbors (Dict[frozenset[Coords], Harbor]):
+                        The harbors on the board, keyed by the coords of the edge they are attached to
                     robber (Set[Coords]): The location of the robber
     """
 
-    def __init__(self, hexes: Set[Hex], harbors={}, robber: Coords = None):
+    def __init__(self, hexes: Set[Hex], harbors=set(), robber: Coords = None):
         self.hexes: Dict[Coords, Hex] = dict(zip((h.coords for h in hexes), hexes))
-        self.harbors = harbors
+        self.harbors = {frozenset(h.edge_coords): h for h in harbors}
         # Position the robber on the desert
         if robber:
             self.robber = robber
@@ -322,5 +324,24 @@ class BeginnerBoard(Board):
                 Hex(Coords(-2, -2), HexType.HILLS, 5),
                 Hex(Coords(-3, 0), HexType.FIELDS, 6),
                 Hex(Coords(-4, 2), HexType.PASTURE, 11),
-            }
+            },
+            harbors=[
+                Harbor(
+                    edge_coords={Coords(4, 0), Coords(3, 1)}, resource=Resource.GRAIN
+                ),
+                Harbor(edge_coords={Coords(1, 3), Coords(0, 4)}, resource=Resource.ORE),
+                Harbor(edge_coords={Coords(-2, 5), Coords(-3, 5)}, resource=None),
+                Harbor(
+                    edge_coords={Coords(-4, 3), Coords(-4, 4)}, resource=Resource.WOOL
+                ),
+                Harbor(edge_coords={Coords(-4, 0), Coords(-4, 1)}, resource=None),
+                Harbor(edge_coords={Coords(-2, -3), Coords(-3, -2)}, resource=None),
+                Harbor(
+                    edge_coords={Coords(2, -5), Coords(3, -5)}, resource=Resource.BRICK
+                ),
+                Harbor(
+                    edge_coords={Coords(3, -4), Coords(4, -4)}, resource=Resource.LUMBER
+                ),
+                Harbor(edge_coords={Coords(5, -3), Coords(5, -2)}, resource=None),
+            ],
         )

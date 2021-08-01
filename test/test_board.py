@@ -333,3 +333,9 @@ def test_is_valid_hex_coords():
     assert not b.is_valid_hex_coords(Coords(2, -2))
     assert not b.is_valid_hex_coords(Coords(-2, 2))
     assert not b.is_valid_hex_coords(Coords(-2, 0))
+
+
+def test_board_properly_keys_harbors():
+    b = BeginnerBoard()
+    for edge_coords, harbor in b.harbors.items():
+        assert harbor.edge_coords == edge_coords
