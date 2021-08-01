@@ -4,6 +4,8 @@ from pycatan.player import Player
 from pycatan.resource import Resource
 from pycatan.errors import NotEnoughResourcesError
 
+from .helpers import get_resource_hand, assert_trades_equal, get_trade
+
 
 def test_player_starts_with_empty_hand():
     p = Player()
@@ -24,13 +26,7 @@ def test_player_can_add_resources():
 
 def test_player_can_remove_resources():
     p = Player()
-    p.add_resources(
-        {
-            Resource.LUMBER: 30,
-            Resource.BRICK: 20,
-            Resource.ORE: 25,
-        }
-    )
+    p.add_resources(get_resource_hand(lumber=30, brick=20, ore=25))
     p.remove_resources({Resource.LUMBER: 5})
     assert p.resources == {
         Resource.LUMBER: 25,
@@ -88,3 +84,36 @@ def test_player_remove_resources_should_raise():
     p.add_resources({Resource.LUMBER: 3, Resource.GRAIN: 2})
     with pytest.raises(NotEnoughResourcesError):
         p.remove_resources({Resource.LUMBER: 3, Resource.GRAIN: 3})
+
+
+def test_player_get_trades():
+    p = Player()
+    assert len(p.get_possible_trades()) == 0
+    p.add_resources({Resource.LUMBER: 4})
+    assert_trades_equal(
+        p.get_possible_trades(),
+        [
+            get_trade(lumber=-4, ore=1),
+            get_trade(lumber=-4, brick=1),
+            get_trade(lumber=-4, grain=1),
+            get_trade(lumber=-4, wool=1),
+        ],
+    )
+
+
+def test_player_get_trades_multiple_trades():
+    p = Player()
+    p.add_resources({Resource.GRAIN: 4, Resource.BRICK: 4})
+    assert_trades_equal(
+        p.get_possible_trades(),
+        [
+            get_trade(brick=-4, ore=1),
+            get_trade(brick=-4, lumber=1),
+            get_trade(brick=-4, grain=1),
+            get_trade(brick=-4, wool=1),
+            get_trade(grain=-4, ore=1),
+            get_trade(grain=-4, lumber=1),
+            get_trade(grain=-4, brick=1),
+            get_trade(grain=-4, wool=1),
+        ],
+    )

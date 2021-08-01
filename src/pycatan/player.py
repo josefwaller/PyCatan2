@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 from .resource import Resource
 from .errors import NotEnoughResourcesError
@@ -55,3 +55,17 @@ class Player:
         """
         for res, num in resources.items():
             self.resources[res] += num
+
+    def get_possible_trades(self) -> List[Dict[Resource, int]]:
+        """Get a list of the possible trades for this player
+        Returns: A set of the possible trades for this player, where negative numbers mean the player would
+            give away those resources and positive numbers mean the player would receive those resources
+        """
+        trades = []
+        for res in Resource:
+            if self.has_resources({res: 4}):
+                # Add the 4-1 trades
+                for r in Resource:
+                    if r != res:
+                        trades.append({res: -4, r: 1})
+        return trades
