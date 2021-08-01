@@ -125,7 +125,7 @@ def test_cannot_build_on_top_of_settlement():
     player = Player()
     with pytest.raises(CoordsBlockedError):
         board.add_corner_building(
-            player, Coords(1, -1), BuildingType.SETTLEMENT, check_connection=False
+            player, Coords(1, -1), BuildingType.SETTLEMENT, ensure_connected=False
         )
         board.add_corner_building(player, Coords(1, -1), BuildingType.SETTLEMENT)
 
@@ -135,7 +135,7 @@ def test_cannot_build_too_close_to_settlement():
     player = Player()
     with pytest.raises(TooCloseToBuildingError):
         board.add_corner_building(
-            player, Coords(-2, 2), BuildingType.SETTLEMENT, check_connection=False
+            player, Coords(-2, 2), BuildingType.SETTLEMENT, ensure_connected=False
         )
         board.add_corner_building(player, Coords(-3, 2), BuildingType.SETTLEMENT)
 
@@ -151,7 +151,7 @@ def test_can_add_settlement():
     board = BeginnerBoard()
     player = Player()
     board.add_corner_building(
-        player, Coords(1, 0), BuildingType.SETTLEMENT, check_connection=False
+        player, Coords(1, 0), BuildingType.SETTLEMENT, ensure_connected=False
     )
     assert board.corners[Coords(1, 0)].building is not None
     assert board.corners[Coords(1, 0)].building.building_type == BuildingType.SETTLEMENT
@@ -178,7 +178,7 @@ def test_board_get_yield():
         player,
         coords=Coords(2, 0),
         building_type=BuildingType.SETTLEMENT,
-        check_connection=False,
+        ensure_connected=False,
     )
     assert board.get_yield_for_roll(6)[player].total_yield == get_yield(brick=1)
     assert board.get_yield_for_roll(2)[player].total_yield == get_yield(wool=1)
@@ -198,7 +198,7 @@ def test_board_get_yield_multiple_hexes():
         player,
         coords=Coords(0, 1),
         building_type=BuildingType.SETTLEMENT,
-        check_connection=False,
+        ensure_connected=False,
     )
     assert board.get_yield_for_roll(6)[player].total_yield == get_yield(
         lumber=2, brick=1
@@ -246,7 +246,7 @@ def test_cannot_add_road_on_top_of_other():
         player=player,
         edge_coords=edge_coords,
         building_type=BuildingType.ROAD,
-        check_connection=False,
+        ensure_connected=False,
     )
     with pytest.raises(CoordsBlockedError):
         board.add_edge_building(

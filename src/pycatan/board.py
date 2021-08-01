@@ -70,14 +70,14 @@ class Board:
         player: Player,
         building_type: BuildingType,
         edge_coords: Set[Coords],
-        check_connection: bool = True,
+        ensure_connected: bool = True,
     ):
         """Adds an edge building to the board
         Args:
             player (Player): The player adding the building
             building_type (BuildingType): The building_type of the building being added
             edge_coords (Set[Coords]): The coordinates the edge to build the building on (i.e. the coordinates of the two corners the edge connects)
-            check_connection (bool, optional): Whetehr to ensure that the edge building is connected to another building. Defaults to True
+            ensure_connected (bool, optional): Whetehr to ensure that the edge building is connected to another building. Defaults to True
         Raises:
             ValueError: If the edge_coords are not valid
             CoordsBlockedError: If there is already a building on the edge
@@ -97,7 +97,7 @@ class Board:
         if edge.building is not None:
             raise CoordsBlockedError("There is already a building on this edge")
 
-        if check_connection:
+        if ensure_connected:
             # Check if it's connected to a corner building
             valid_buildings = set(
                 filter(
@@ -137,13 +137,15 @@ class Board:
         player: Player,
         coords: Coords,
         building_type: BuildingType,
-        check_connection=True,
+        ensure_connected=True,
     ):
         """Add a settlement to the board. Does not check if the player has enough cards.
 
         Args:
                         player (Player): The player who owns the settlement
                         coords (Coords): The coords to put the building
+                        ensure_connected (bool): Whether to ensure that the building is connected to the player's roads.
+                            Defaults to True
 
         Raises:
                         InvalidCoordsError: If `coords` is not a valid corner
@@ -151,7 +153,7 @@ class Board:
                         PositionAlreadyTakenError: If the position is already taken
         """
         if building_type == BuildingType.SETTLEMENT:
-            self.assert_valid_settlement_coords(coords, player, check_connection)
+            self.assert_valid_settlement_coords(coords, player, ensure_connected)
         elif building_type == BuildingType.CITY:
             self.assert_valid_city_coords(player=player, coords=coords)
         else:
@@ -165,14 +167,14 @@ class Board:
         )
 
     def assert_valid_settlement_coords(
-        self, coords: Coords, player: Player, check_connection=True
+        self, coords: Coords, player: Player, ensure_connected
     ) -> None:
         """Checks whether the coordinates given are a valid place to build a settlement.
             Does not return anything, but raises an error if the coordinates are not valid
         Args:
             coords (Coords): The coordinates to check
             player (Player): The player building the settlement
-            check_connection (bool): Whether the check if the settlement will be connected by road
+            ensure_connected (bool): Whether the check if the settlement will be connected by road
         Raises:
             TooCloseToBuildingError: If the building is too close to another building
             PositionAlreadyTakenError: If the position is already taken
@@ -192,7 +194,7 @@ class Board:
             raise TooCloseToBuildingError(
                 "There is a building that is not at least 2 edges away from this position"
             )
-        if check_connection:
+        if ensure_connected:
             edge_coords = set(
                 map(lambda c: frozenset({coords, c.coords}), connected_corners)
             )

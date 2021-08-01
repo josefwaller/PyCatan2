@@ -27,23 +27,23 @@ class Game:
         self,
         player: Player,
         coords: Coords,
-        check_resources: bool = True,
-        check_connection: bool = True,
+        cost_resources: bool = True,
+        ensure_connected: bool = True,
     ) -> None:
         """Builds a settlement by the player given in the coords given, or raises an error
         Args:
             player (Player): The player who is building the settlement
             coords (Coords): The coordinates to build the settlement at
-            check_resources (bool, optional): Whether to remove the resources required to build a settlement from the player's hands, and
+            cost_resources (bool, optional): Whether to remove the resources required to build a settlement from the player's hands, and
                 raise an error if they don't have them. Defaults to True
-            check_connection (bool, optional): Whether to raise an error if the settlement would not be connected to a road owned by the same
+            ensure_connection (bool, optional): Whether to raise an error if the settlement would not be connected to a road owned by the same
                 player. Defaults to True
         Raises:
             NotEnoughResourcesError: If check_resources is True and the player does not have enough resources
             NotConnectedError: If check_connection is True and the settlement would not be connected to any roads owned by the player
         """
         # Check the player has the resources
-        if check_resources and not player.has_resources(
+        if cost_resources and not player.has_resources(
             BuildingType.SETTLEMENT.get_required_resources()
         ):
             raise NotEnoughResourcesError(
@@ -51,27 +51,27 @@ class Game:
             )
         # Build the settlement
         self.board.add_corner_building(
-            player, coords, BuildingType.SETTLEMENT, check_connection=check_connection
+            player, coords, BuildingType.SETTLEMENT, ensure_connected=ensure_connected
         )
         # Remove the resources
-        if check_resources:
+        if cost_resources:
             player.remove_resources(BuildingType.SETTLEMENT.get_required_resources())
 
     def build_road(
         self,
         player: Player,
         edge_coords: Set[Coords],
-        check_resources: bool = True,
-        check_connection: bool = True,
+        cost_resources: bool = True,
+        ensure_connected: bool = True,
     ):
         """Builds a road in the catan game
         Args:
             player (Player): The player who is building the road
             edge_coords (Set[Coords]): The coordinates of the edge to build a road on.
                 Should be two valid connected corner coordinates (i.e. {(1, 0), (1, -1)})
-            check_resources (bool): Whether to remove resources from the player's hand to build the road,
+            cost_resources(bool): Whether to remove resources from the player's hand to build the road,
                 and raise an error if they don't have enough
-            check_connection (bool): Whether to ensure that the road is connected to another road, settlement or city
+            ensure_connected (bool): Whether to ensure that the road is connected to another road, settlement or city
         Raises:
             NotEnoughResourcesError: If check_resources is True and the player doesn't have the cards to build the road
             NotConnectedError: If check_connection is True and the road is not connected to anything
@@ -80,7 +80,7 @@ class Game:
         """
 
         # Check the player has the resources
-        if check_resources and not player.has_resources(
+        if cost_resources and not player.has_resources(
             BuildingType.ROAD.get_required_resources()
         ):
             raise NotEnoughResourcesError(
@@ -90,10 +90,10 @@ class Game:
             player=player,
             edge_coords=edge_coords,
             building_type=BuildingType.ROAD,
-            check_connection=check_connection,
+            ensure_connected=ensure_connected,
         )
         # Remove the resources
-        if check_resources:
+        if cost_resources:
             player.remove_resources(BuildingType.ROAD.get_required_resources())
 
     def add_yield_for_roll(self, roll) -> None:
