@@ -22,5 +22,9 @@ class CoordsBlockedError(InvalidCoordsError):
     pass
 
 
+class NotConnectedError(InvalidCoordsError):
+    """Error for when the player is trying to build a settlement that is not connected by road"""
+
+
 class NotEnoughResourcesError(Exception):
     """Error when the player doesn't have enough resources to do this action"""

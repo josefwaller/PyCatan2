@@ -23,13 +23,39 @@ class Game:
         self.board = board
         self.players = [Player() for i in range(num_players)]
 
-    def build_settlement(self, player: Player, coords: Coords) -> None:
-        if not player.has_resources(BuildingType.SETTLEMENT.get_required_resources()):
+    def build_settlement(
+        self,
+        player: Player,
+        coords: Coords,
+        check_resources: bool = True,
+        check_connection: bool = True,
+    ) -> None:
+        """Builds a settlement by the player given in the coords given, or raises an error
+        Args:
+            player (Player): The player who is building the settlement
+            coords (Coords): The coordinates to build the settlement at
+            check_resources (bool, optional): Whether to remove the resources required to build a settlement from the player's hands, and
+                raise an error if they don't have them. Defaults to True
+            check_connection (bool, optional): Whether to raise an error if the settlement would not be connected to a road owned by the same
+                player. Defaults to True
+        Raises:
+            NotEnoughResourcesError: If check_resources is True and the player does not have enough resources
+            NotConnectedError: If check_connection is True and the settlement would not be connected to any roads owned by the player
+        """
+        # Check the player has the resources
+        if check_resources and not player.has_resources(
+            BuildingType.SETTLEMENT.get_required_resources()
+        ):
             raise NotEnoughResourcesError(
                 "Player does not have enough resources to build a settlement"
             )
-        else:
-            self.board.add_corner_building(player, coords, BuildingType.SETTLEMENT)
+        # Build the settlement
+        self.board.add_corner_building(
+            player, coords, BuildingType.SETTLEMENT, check_connection=check_connection
+        )
+        # Remove the resources
+        if check_resources:
+            player.remove_resources(BuildingType.SETTLEMENT.get_required_resources())
 
     def add_yield_for_roll(self, roll) -> None:
         """Compute what resources players would receive if `roll` was rolled, and

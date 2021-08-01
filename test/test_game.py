@@ -1,4 +1,5 @@
 from typing import Dict
+import pytest
 
 from pycatan.player import Player
 from pycatan.coords import Coords
@@ -7,6 +8,7 @@ from pycatan.roll_yield import RollYield
 from pycatan.resource import Resource
 from pycatan.board import BeginnerBoard
 from pycatan.building_type import BuildingType
+from pycatan.errors import NotEnoughResourcesError
 
 
 def get_roll_yield(lumber=0, brick=0, grain=0, ore=0, wool=0):
@@ -32,8 +34,9 @@ def test_game_allows_variable_players():
 
 def test_game_add_yield_for_roll():
     g = Game(BeginnerBoard())
-    g.players[0].add_resources(BuildingType.SETTLEMENT.get_required_resources())
-    g.build_settlement(g.players[0], Coords(-2, 0))
+    g.build_settlement(
+        g.players[0], Coords(-2, 0), check_resources=False, check_connection=False
+    )
     g.add_yield_for_roll(6)
     assert g.players[0].has_resources({Resource.GRAIN: 1})
     g.add_yield_for_roll(4)
@@ -61,12 +64,33 @@ def test_game_add_yield():
     )
 
 
-def test_game_build_settlement():
+def test_game_build_settlement_free():
     g = Game(BeginnerBoard())
-    g.players[0].add_resources(BuildingType.SETTLEMENT.get_required_resources())
-    g.build_settlement(player=g.players[0], coords=Coords(-1, 0))
+    g.build_settlement(
+        player=g.players[0],
+        coords=Coords(-1, 0),
+        check_resources=False,
+        check_connection=False,
+    )
     assert g.board.corners[Coords(-1, 0)].building is not None
     assert g.board.corners[Coords(-1, 0)].building.owner == g.players[0]
     assert (
         g.board.corners[Coords(-1, 0)].building.building_type == BuildingType.SETTLEMENT
+    )
+
+
+def test_game_build_settlement_no_resources():
+    g = Game(BeginnerBoard())
+    with pytest.raises(NotEnoughResourcesError):
+        g.build_settlement(player=g.players[0], coords=Coords(1, 0))
+
+
+def test_game_build_settlement_with_resources():
+    g = Game(BeginnerBoard())
+    g.players[0].add_resources(BuildingType.SETTLEMENT.get_required_resources())
+    g.build_settlement(player=g.players[0], coords=Coords(1, 0), check_connection=False)
+    # Check the player now has 0 resources
+    assert (
+        len([r for r in g.players[0].resources.keys() if g.players[0].resources[r] > 0])
+        == 0
     )
