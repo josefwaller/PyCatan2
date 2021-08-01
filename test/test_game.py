@@ -268,3 +268,125 @@ def test_can_steal_largest_army():
     assert g.largest_army_owner is g.players[1]
     g.play_development_card(g.players[0], DevelopmentCard.KNIGHT)
     assert g.largest_army_owner is g.players[0]
+
+
+def test_get_victory_points_starts_at_zero():
+    g = Game(BeginnerBoard())
+    for p in g.players:
+        assert g.get_victory_points(p) == 0
+
+
+def test_get_victory_points_gets_settlements():
+    g = Game(BeginnerBoard())
+    p = g.players[0]
+    g.build_settlement(p, Coords(1, 0), ensure_connected=False, cost_resources=False)
+    assert g.get_victory_points(p) == 1
+
+
+def test_get_victory_points_cities():
+    g = Game(BeginnerBoard())
+    p = g.players[0]
+    g.build_settlement(p, Coords(1, 0), ensure_connected=False, cost_resources=False)
+    g.upgrade_settlement_to_city(p, Coords(1, 0), cost_resources=False)
+    assert g.get_victory_points(p) == 2
+
+
+def test_get_victory_points_longest_road():
+    g = Game(BeginnerBoard())
+    p = g.players[0]
+    p.add_resources(get_resource_hand(lumber=5, brick=5))
+    build_road_along_path(
+        g,
+        p,
+        (
+            Coords(1, 0),
+            Coords(0, 1),
+            Coords(-1, 1),
+            Coords(-1, 0),
+            Coords(0, -1),
+            Coords(1, -1),
+        ),
+    )
+    assert g.get_victory_points(p) == 2
+
+
+def test_get_victory_points_largest_army():
+    g = Game(BeginnerBoard())
+    p = g.players[0]
+    p.development_cards[DevelopmentCard.KNIGHT] = 5
+    for i in range(5):
+        g.play_development_card(p, DevelopmentCard.KNIGHT)
+    assert g.get_victory_points(p) == 2
+
+
+def test_get_victory_points_development_cards():
+    g = Game(BeginnerBoard())
+    p = g.players[0]
+    p.development_cards[DevelopmentCard.VICTORY_POINT] = 3
+    assert g.get_victory_points(p) == 3
+
+
+def test_get_victory_points_complicated():
+    g = Game(BeginnerBoard())
+    g.players[0].add_resources(
+        get_resource_hand(lumber=9, brick=9, grain=4, wool=2, ore=3)
+    )
+    build_road_along_path(
+        g,
+        g.players[0],
+        (
+            Coords(1, 0),
+            Coords(0, 1),
+            Coords(-1, 1),
+            Coords(-1, 0),
+            Coords(0, -1),
+            Coords(1, -1),
+            Coords(1, 0),
+        ),
+    )
+    g.build_settlement(g.players[0], Coords(1, 0))
+    g.build_settlement(g.players[0], Coords(-1, 0))
+    g.upgrade_settlement_to_city(g.players[0], Coords(-1, 0))
+    assert g.get_victory_points(g.players[0]) == 5
+    g.players[1].development_cards[DevelopmentCard.VICTORY_POINT] = 4
+    g.players[1].development_cards[DevelopmentCard.KNIGHT] = 3
+    for i in range(3):
+        g.play_development_card(g.players[1], DevelopmentCard.KNIGHT)
+    g.players[1].add_resources(
+        get_resource_hand(lumber=4, brick=4, grain=6, ore=6, wool=2)
+    )
+    g.build_settlement(g.players[1], Coords(2, -2), ensure_connected=False)
+    build_road_along_path(
+        g, g.players[1], (Coords(2, -2), Coords(2, -3), Coords(3, -4))
+    )
+    g.build_settlement(g.players[1], Coords(3, -4))
+    g.upgrade_settlement_to_city(g.players[1], Coords(2, -2))
+    g.upgrade_settlement_to_city(g.players[1], Coords(3, -4))
+    assert g.get_victory_points(g.players[1]) == 10
+    g.players[2].add_resources(get_resource_hand(lumber=13, brick=13))
+    build_road_along_path(
+        g,
+        g.players[2],
+        (
+            Coords(2, 0),
+            Coords(2, 1),
+            Coords(1, 2),
+            Coords(0, 2),
+            Coords(-1, 3),
+            Coords(-2, 3),
+            Coords(-2, 2),
+            Coords(-3, 2),
+            Coords(-3, 1),
+            Coords(-2, 0),
+            Coords(-2, -1),
+            Coords(-1, -2),
+            Coords(0, -2),
+            Coords(1, -3),
+        ),
+    )
+    g.players[2].development_cards[DevelopmentCard.KNIGHT] = 5
+    for i in range(5):
+        g.play_development_card(g.players[2], DevelopmentCard.KNIGHT)
+    assert g.get_victory_points(g.players[2]) == 4
+    assert g.get_victory_points(g.players[1]) == 8
+    assert g.get_victory_points(g.players[0]) == 3

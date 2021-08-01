@@ -212,3 +212,23 @@ class Game:
                 < player.number_played_knights
             ):
                 self.largest_army_owner = player
+
+    def get_victory_points(self, player):
+        victory_points = sum(
+            list(
+                map(
+                    lambda c: 2 if c.building.building_type is BuildingType.CITY else 1,
+                    [
+                        c
+                        for c in self.board.corners.values()
+                        if c.building is not None and c.building.owner is player
+                    ],
+                )
+            )
+        )
+        if player is self.longest_road_owner:
+            victory_points += 2
+        if player is self.largest_army_owner:
+            victory_points += 2
+
+        return victory_points + player.development_cards[DevelopmentCard.VICTORY_POINT]
