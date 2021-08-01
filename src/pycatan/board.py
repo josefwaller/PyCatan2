@@ -60,7 +60,7 @@ class Board:
                     self.edges[frozenset([c, c + offset])] = Edge(set([c, c + offset]))
 
     def add_settlement(self, owner: Player, coords: Coords):
-        """Add a settlement to the board
+        """Add a settlement to the board. Does not check if the player has enough cards.
 
         Args:
                         player (Player): The player who owns the settlement
