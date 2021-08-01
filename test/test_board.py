@@ -447,3 +447,22 @@ def test_calculate_longest_road_multiple_players():
     add_free_road_from_path(b, p2, road_paths[2])
     assert b.calculate_player_longest_road(p1) == 5
     assert b.calculate_player_longest_road(p2) == 6
+
+
+def test_allow_building_road_only_connected_to_settlement():
+    b = BeginnerBoard()
+    p = Player()
+    add_free_settlement(b, p, Coords(1, 0))
+    b.add_edge_building(p, BuildingType.ROAD, edge_coords={Coords(1, 0), Coords(0, 1)})
+    assert b.edges[frozenset({Coords(1, 0), Coords(0, 1)})].building.owner == p
+
+
+def test_can_break_longest_road_with_settlement():
+    b = BeginnerBoard()
+    p1 = Player()
+    p2 = Player()
+    path = (Coords(1, -1), Coords(1, 0), Coords(0, 1), Coords(0, 2), Coords(-1, 3))
+    add_free_road_from_path(b, p1, path)
+    assert b.calculate_player_longest_road(p1) == 4
+    add_free_settlement(b, p2, Coords(0, 1))
+    assert b.calculate_player_longest_road(p1) == 2

@@ -324,6 +324,9 @@ class Board:
         potential = starting
         while len(potential) > 0:
             current = potential.pop(0)
+            building = self.corners[current[0]].building
+            if building is not None and building.owner is not player:
+                continue
             for edge in self.get_edges_for_corner_coords(current[0]):
                 if (
                     edge not in current[1]
