@@ -3,6 +3,7 @@ from pycatan.board import Board
 from pycatan.player import Player
 from pycatan.coords import Coords
 from pycatan.building_type import BuildingType
+from pycatan.harbor import Harbor
 
 
 def get_resource_hand(lumber=0, wool=0, brick=0, ore=0, grain=0):
@@ -26,13 +27,16 @@ def add_free_city(b: Board, p: Player, c: Coords):
     b.add_corner_building(p, c, building_type=BuildingType.CITY)
 
 
-def get_trade(lumber=0, wool=0, brick=0, ore=0, grain=0):
-    hand = get_resource_hand(
-        lumber=lumber, wool=wool, brick=brick, ore=ore, grain=grain
-    )
-    return {res: x for res, x in hand.items() if x != 0}
-
-
 def assert_trades_equal(trade_one, trade_two):
     assert len([x for x in trade_one if x not in trade_two]) == 0
     assert len([x for x in trade_two if x not in trade_one]) == 0
+
+
+def get_harbor(
+    edge_coords: Coords = {Coords(3, 2), Coords(2, 3)}, resource: Resource = None
+):
+    return Harbor(edge_coords, resource)
+
+
+def get_trades(resource, trade_amount):
+    return [{resource: -trade_amount, res: 1} for res in Resource if res != resource]

@@ -4,7 +4,12 @@ from pycatan.player import Player
 from pycatan.resource import Resource
 from pycatan.errors import NotEnoughResourcesError
 
-from .helpers import get_resource_hand, assert_trades_equal, get_trade
+from .helpers import (
+    get_resource_hand,
+    assert_trades_equal,
+    get_harbor,
+    get_trades,
+)
 
 
 def test_player_starts_with_empty_hand():
@@ -90,15 +95,7 @@ def test_player_get_trades():
     p = Player()
     assert len(p.get_possible_trades()) == 0
     p.add_resources({Resource.LUMBER: 4})
-    assert_trades_equal(
-        p.get_possible_trades(),
-        [
-            get_trade(lumber=-4, ore=1),
-            get_trade(lumber=-4, brick=1),
-            get_trade(lumber=-4, grain=1),
-            get_trade(lumber=-4, wool=1),
-        ],
-    )
+    assert_trades_equal(p.get_possible_trades(), get_trades(Resource.LUMBER, 4))
 
 
 def test_player_get_trades_multiple_trades():
@@ -106,14 +103,55 @@ def test_player_get_trades_multiple_trades():
     p.add_resources({Resource.GRAIN: 4, Resource.BRICK: 4})
     assert_trades_equal(
         p.get_possible_trades(),
-        [
-            get_trade(brick=-4, ore=1),
-            get_trade(brick=-4, lumber=1),
-            get_trade(brick=-4, grain=1),
-            get_trade(brick=-4, wool=1),
-            get_trade(grain=-4, ore=1),
-            get_trade(grain=-4, lumber=1),
-            get_trade(grain=-4, brick=1),
-            get_trade(grain=-4, wool=1),
-        ],
+        get_trades(Resource.GRAIN, 4) + get_trades(Resource.BRICK, 4),
     )
+
+
+def test_player_get_trades_harbor():
+    p = Player()
+    p.add_resources(get_resource_hand(brick=2))
+    p.connected_harbors.add(get_harbor(resource=Resource.BRICK))
+    assert_trades_equal(p.get_possible_trades(), get_trades(Resource.BRICK, 2))
+
+
+def test_player_get_trades_multiple_harbors():
+    p = Player()
+    p.add_resources(get_resource_hand(lumber=2, ore=2, grain=2))
+    for r in [Resource.LUMBER, Resource.ORE, Resource.GRAIN]:
+        p.connected_harbors.add(get_harbor(resource=r))
+    assert_trades_equal(
+        p.get_possible_trades(),
+        get_trades(Resource.LUMBER, 2)
+        + get_trades(Resource.ORE, 2)
+        + get_trades(Resource.GRAIN, 2),
+    )
+
+
+def test_player_get_trades_generic_harbor():
+    p = Player()
+    p.add_resources(get_resource_hand(wool=3, lumber=3))
+    p.connected_harbors.add(get_harbor())
+    assert_trades_equal(
+        p.get_possible_trades(),
+        get_trades(Resource.WOOL, 3) + get_trades(Resource.LUMBER, 3),
+    )
+
+
+def test_player_get_trades_mixed():
+    p = Player()
+    p.add_resources(get_resource_hand(lumber=4, wool=2, brick=2))
+    p.connected_harbors.add(get_harbor(resource=Resource.WOOL))
+    assert_trades_equal(
+        p.get_possible_trades(),
+        get_trades(Resource.LUMBER, 4) + get_trades(Resource.WOOL, 2),
+    )
+
+
+def test_player_get_trades_best_deal():
+    p = Player()
+    p.add_resources(get_resource_hand(lumber=4))
+    assert_trades_equal(p.get_possible_trades(), get_trades(Resource.LUMBER, 4))
+    p.connected_harbors.add(get_harbor())
+    assert_trades_equal(p.get_possible_trades(), get_trades(Resource.LUMBER, 3))
+    p.connected_harbors.add(get_harbor(resource=Resource.LUMBER))
+    assert_trades_equal(p.get_possible_trades(), get_trades(Resource.LUMBER, 2))

@@ -177,6 +177,11 @@ class Board:
 
         self.corners[coords].building = CornerBuilding(player, building_type, coords)
 
+        # Connect the player to a harbor if they can
+        for harbor in self.harbors.values():
+            if coords in harbor.edge_coords and harbor not in player.connected_harbors:
+                player.connected_harbors.add(harbor)
+
     def assert_valid_settlement_coords(
         self, coords: Coords, player: Player, ensure_connected
     ) -> None:

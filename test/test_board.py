@@ -13,6 +13,7 @@ from pycatan.errors import (
     NotConnectedError,
     RequiresSettlementError,
 )
+from pycatan.resource import Resource
 from .helpers import get_resource_hand, add_free_settlement, add_free_city
 
 ONE_HEX_COORDS = {Coords(0, 0)}
@@ -339,3 +340,17 @@ def test_board_properly_keys_harbors():
     b = BeginnerBoard()
     for edge_coords, harbor in b.harbors.items():
         assert harbor.edge_coords == edge_coords
+
+
+def test_board_adds_harbors_to_players():
+    b = BeginnerBoard()
+    p = Player()
+    add_free_settlement(b, p, Coords(1, 0))
+    assert len(p.connected_harbors) == 0
+    add_free_settlement(b, p, Coords(3, 2))
+    assert len(p.connected_harbors) == 0
+    add_free_settlement(b, p, Coords(4, 0))
+    assert len([h for h in p.connected_harbors if h.resource == Resource.GRAIN]) == 1
+    add_free_settlement(b, p, Coords(3, -4))
+    assert len([h for h in p.connected_harbors if h.resource == Resource.GRAIN]) == 1
+    assert len([h for h in p.connected_harbors if h.resource == Resource.LUMBER]) == 1
