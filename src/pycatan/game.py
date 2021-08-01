@@ -29,6 +29,7 @@ class Game:
         self.board = board
         self.players = [Player() for i in range(num_players)]
         self.longest_road_owner = None
+        self.largest_army_owner = None
         self.development_card_deck = (
             14 * [DevelopmentCard.KNIGHT]
             + 5 * [DevelopmentCard.VICTORY_POINT]
@@ -200,3 +201,14 @@ class Game:
         player.development_cards[card] += 1
         player.remove_resources(DevelopmentCard.get_required_resources())
         return card
+
+    def play_development_card(self, player: Player, card: DevelopmentCard):
+        player.play_development_card(card)
+        if card is DevelopmentCard.KNIGHT:
+            player.number_played_knights += 1
+            if player.number_played_knights >= 3 and (
+                self.largest_army_owner is None
+                or self.largest_army_owner.number_played_knights
+                < player.number_played_knights
+            ):
+                self.largest_army_owner = player

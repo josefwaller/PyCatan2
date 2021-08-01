@@ -18,6 +18,7 @@ class Player:
         self.resources: Dict[Resource, int] = {res: 0 for res in Resource}
         self.development_cards = {d: 0 for d in DevelopmentCard}
         self.connected_harbors = set()
+        self.number_played_knights = 0
 
     def has_resources(self, resources: Dict[Resource, int]) -> bool:
         """Check if the player has the resources given
@@ -93,3 +94,10 @@ class Player:
                         trades.append({res: -amount, r: 1})
         # Filter out duplicates
         return [dict(t) for t in {tuple(d.items()) for d in trades}]
+
+    def play_development_card(self, card: DevelopmentCard):
+        if self.development_cards[card] < 1:
+            raise ValueError(
+                "Cannot play a development card that the player doesn't have!"
+            )
+        self.development_cards[card] -= 1

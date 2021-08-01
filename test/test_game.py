@@ -9,6 +9,7 @@ from pycatan.resource import Resource
 from pycatan.board import BeginnerBoard
 from pycatan.building_type import BuildingType
 from pycatan.errors import NotEnoughResourcesError
+from pycatan.development_card import DevelopmentCard
 
 from .helpers import get_resource_hand, build_road_along_path
 
@@ -238,3 +239,32 @@ def test_cant_build_dev_card_no_resources():
     g = Game(BeginnerBoard())
     with pytest.raises(NotEnoughResourcesError):
         g.build_development_card(g.players[0])
+
+
+def test_can_get_largest_army():
+    g = Game(BeginnerBoard())
+    g.players[0].development_cards[DevelopmentCard.KNIGHT] = 3
+    g.play_development_card(g.players[0], DevelopmentCard.KNIGHT)
+    assert g.largest_army_owner is None
+    g.play_development_card(g.players[0], DevelopmentCard.KNIGHT)
+    assert g.largest_army_owner is None
+    g.play_development_card(g.players[0], DevelopmentCard.KNIGHT)
+    assert g.largest_army_owner is g.players[0]
+
+
+def test_can_steal_largest_army():
+    g = Game(BeginnerBoard())
+    g.players[0].development_cards[DevelopmentCard.KNIGHT] = 5
+    g.players[1].development_cards[DevelopmentCard.KNIGHT] = 4
+    for i in range(3):
+        g.play_development_card(g.players[0], DevelopmentCard.KNIGHT)
+    assert g.largest_army_owner is g.players[0]
+    for i in range(3):
+        g.play_development_card(g.players[1], DevelopmentCard.KNIGHT)
+    assert g.largest_army_owner is g.players[0]
+    g.play_development_card(g.players[1], DevelopmentCard.KNIGHT)
+    assert g.largest_army_owner is g.players[1]
+    g.play_development_card(g.players[0], DevelopmentCard.KNIGHT)
+    assert g.largest_army_owner is g.players[1]
+    g.play_development_card(g.players[0], DevelopmentCard.KNIGHT)
+    assert g.largest_army_owner is g.players[0]
