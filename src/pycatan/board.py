@@ -10,6 +10,7 @@ from .player import Player
 from .building import CornerBuilding
 from .building_type import BuildingType
 from .errors import InvalidCoordsError, TooCloseToBuildingError, CoordsBlockedError
+from .roll_yield import RollYield, RollYieldSource
 
 
 class Board:
@@ -20,20 +21,20 @@ class Board:
     assuming all the hexes tile correctly
 
     Args:
-            hexes (Set[Hex]):
-                    The hexes on the board, keyed by their coordinates
-            harbors (Dict[set[Coord, Coord], Harbor]):
-                    The harbors on the board, keyed by the two corners they are attached to
+                    hexes (Set[Hex]):
+                                    The hexes on the board, keyed by their coordinates
+                    harbors (Dict[set[Coord, Coord], Harbor]):
+                                    The harbors on the board, keyed by the two corners they are attached to
 
     Attributes:
-            hexes (Dict[Coord, Hex]):
-                    The hexes on this catan board, keyed by their coordinates
-            corners: (Dict[Coords, Corner]):
-                    The corners on the board, keyed by their coordinates
-            edges: (Dict[frozenset[Coords, Coords], Edge]):
-                    The edges on the board, keyed by the coordinates of the two corners they connect
-            harbors (Dict[Set[Coord, Coord], Harbor]):
-                    The harbors on the board, keyed by the two corners they are attached to
+                    hexes (Dict[Coord, Hex]):
+                                    The hexes on this catan board, keyed by their coordinates
+                    corners: (Dict[Coords, Corner]):
+                                    The corners on the board, keyed by their coordinates
+                    edges: (Dict[frozenset[Coords, Coords], Edge]):
+                                    The edges on the board, keyed by the coordinates of the two corners they connect
+                    harbors (Dict[Set[Coord, Coord], Harbor]):
+                                    The harbors on the board, keyed by the two corners they are attached to
     """
 
     def __init__(self, hexes: Set[Hex], harbors={}):
@@ -62,13 +63,13 @@ class Board:
         """Add a settlement to the board
 
         Args:
-                player (Player): The player who owns the settlement
-                coords (Coords): The coords to put the building
+                        player (Player): The player who owns the settlement
+                        coords (Coords): The coords to put the building
 
         Raises:
-                InvalidCoordsError: If `coords` is not a valid corner
-                TooCloseToBuildingError: If the building is too close to another
-                PositionAlreadyTakenError: If the position is already taken
+                        InvalidCoordsError: If `coords` is not a valid corner
+                        TooCloseToBuildingError: If the building is too close to another
+                        PositionAlreadyTakenError: If the position is already taken
         """
         if coords not in self.corners.keys():
             raise InvalidCoordsError("coords must be the coordinates of a corner")
@@ -101,16 +102,52 @@ class Board:
         """Get the corners connected to the corner given by an edge
 
         Args:
-                corner (Corner): The corner to get the connected corners for
+                        corner (Corner): The corner to get the connected corners for
 
         Returns:
-                Set[Corner]: The corners that are connected to the corner given
+                        Set[Corner]: The corners that are connected to the corner given
         """
         connected = set()
         for c in Corner.CONNECTED_CORNER_OFFSETS:
             if c + corner.coords in self.corners.keys():
                 connected.add(self.corners[c + corner.coords])
         return connected
+
+    def get_connected_hex_corners(self, hex) -> Set[Corner]:
+        return set(
+            map(
+                lambda offset: self.corners[hex.coords + offset],
+                Hex.CONNECTED_CORNER_OFFSETS,
+            )
+        )
+
+    def get_yield_for_roll(self, roll) -> Dict[Player, RollYield]:
+        total_yield: Dict[Player, RollYield] = {}
+        for hex in self.hexes.values():
+            if hex.token_number == roll:
+                resource = hex.hex_type.get_resource()
+                # Check around the hex for any settlements/cities
+                for corner in self.get_connected_hex_corners(hex):
+                    if corner.building is not None:
+                        owner = corner.building.owner
+                        if owner not in total_yield.keys():
+                            total_yield[owner] = RollYield()
+                        amount = (
+                            2
+                            if corner.building.building_type is BuildingType.CITY
+                            else 1
+                        )
+                        total_yield[owner].add_yield(
+                            resource,
+                            amount,
+                            source=RollYieldSource(
+                                resource,
+                                amount,
+                                corner.building,
+                                hex,
+                            ),
+                        )
+        return total_yield
 
 
 class BeginnerBoard(Board):
