@@ -466,3 +466,17 @@ def test_can_break_longest_road_with_settlement():
     assert b.calculate_player_longest_road(p1) == 4
     add_free_settlement(b, p2, Coords(0, 1))
     assert b.calculate_player_longest_road(p1) == 2
+
+
+def test_cannot_build_road_through_enemy_settlement():
+    b = BeginnerBoard()
+    p1 = Player()
+    p2 = Player()
+    add_free_road(b, p1, {Coords(1, 0), Coords(0, 1)})
+    add_free_settlement(b, p2, Coords(0, 1))
+    with pytest.raises(NotConnectedError):
+        b.add_edge_building(
+            p1,
+            building_type=BuildingType.ROAD,
+            edge_coords={Coords(0, 1), Coords(0, 2)},
+        )

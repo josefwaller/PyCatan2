@@ -123,20 +123,18 @@ class Board:
                 edges_connected = set()
                 for coords in edge_coords:
                     for c in self.get_corner_connected_corners(self.corners[coords]):
-                        print(coords, c.coords)
-                        edges_connected.add(self.edges[frozenset([coords, c.coords])])
-                if (
-                    len(
-                        set(
-                            filter(
-                                lambda e: e.building is not None
-                                and e.building.owner is player,
-                                edges_connected,
-                            )
-                        )
-                    )
-                    == 0
-                ):
+                        connected_edge = self.edges[frozenset({coords, c.coords})]
+                        # Check if there is an edge building (i.e. a road) to be connected to here
+                        if (
+                            connected_edge.building is not None
+                            and connected_edge.building.owner is player
+                        ):
+                            # Checks that we aren't going through an enemy building to be connected
+                            building = self.corners[coords].building
+                            if building is None or building.owner is player:
+                                edges_connected.add(edge)
+
+                if len(edges_connected) == 0:
                     raise NotConnectedError(
                         "Edge building is not connected to any other building"
                     )
