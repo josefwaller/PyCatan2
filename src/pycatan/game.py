@@ -64,6 +64,21 @@ class Game:
         check_resources: bool = True,
         check_connection: bool = True,
     ):
+        """Builds a road in the catan game
+        Args:
+            player (Player): The player who is building the road
+            edge_coords (Set[Coords]): The coordinates of the edge to build a road on.
+                Should be two valid connected corner coordinates (i.e. {(1, 0), (1, -1)})
+            check_resources (bool): Whether to remove resources from the player's hand to build the road,
+                and raise an error if they don't have enough
+            check_connection (bool): Whether to ensure that the road is connected to another road, settlement or city
+        Raises:
+            NotEnoughResourcesError: If check_resources is True and the player doesn't have the cards to build the road
+            NotConnectedError: If check_connection is True and the road is not connected to anything
+            ValueError: If edge_coords is not a set of two valid corner coordinates
+            CoordsBlockedError: If the position is already blocked by another road/other edge building
+        """
+
         # Check the player has the resources
         if check_resources and not player.has_resources(
             BuildingType.ROAD.get_required_resources()

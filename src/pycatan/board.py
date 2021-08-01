@@ -72,6 +72,17 @@ class Board:
         edge_coords: Set[Coords],
         check_connection: bool = True,
     ):
+        """Adds an edge building to the board
+        Args:
+            player (Player): The player adding the building
+            building_type (BuildingType): The building_type of the building being added
+            edge_coords (Set[Coords]): The coordinates the edge to build the building on (i.e. the coordinates of the two corners the edge connects)
+            check_connection (bool, optional): Whetehr to ensure that the edge building is connected to another building. Defaults to True
+        Raises:
+            ValueError: If the edge_coords are not valid
+            CoordsBlockedError: If there is already a building on the edge
+            NotConnectedError: If check_connection is true and the building is not connected to anything
+        """
         for c in edge_coords:
             if c not in self.corners.keys():
                 raise ValueError(
