@@ -303,6 +303,49 @@ class Board:
     def is_valid_hex_coords(self, coords):
         return len(set(filter(lambda x: x == coords, self.hexes.keys()))) != 0
 
+    def calculate_player_longest_road(self, player: Player) -> int:
+        """Calculate the length of the longest road segment for the player given
+        Args:
+            player (Player): The player to calculate the longest road for
+        Returns:
+            int: The length of the ongest road segment
+        """
+        edges = [
+            e
+            for e in self.edges.values()
+            if e.building is not None and e.building.owner is player
+        ]
+        starting = [(c, [e]) for e in edges for c in e.edge_coords]
+        if len(starting) == 0:
+            return 0
+
+        current_longest = starting[0][1]
+
+        potential = starting
+        while len(potential) > 0:
+            current = potential.pop(0)
+            for edge in self.get_edges_for_corner_coords(current[0]):
+                if (
+                    edge not in current[1]
+                    and edge.building is not None
+                    and edge.building.owner is player
+                ):
+                    other_corner = edge.other_corner(current[0])
+                    potential.append((other_corner, [edge] + current[1]))
+                    if len(current[1]) + 1 > len(current_longest):
+                        current_longest = [edge] + current[1]
+
+        return len(current_longest)
+
+    def get_edges_for_corner_coords(self, coords: Coords) -> Set[Edge]:
+        """Returns all the edges who are connected to the corner given
+        Args:
+            coords: The coordinates of the corner
+        Returns:
+            Set[Edge]: A set of the edges attached to that corner
+        """
+        return set(filter(lambda e: coords in e.edge_coords, self.edges.values()))
+
 
 class BeginnerBoard(Board):
     """The beginner board, as outlined in the Catan rules"""

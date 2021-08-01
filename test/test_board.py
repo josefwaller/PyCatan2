@@ -14,7 +14,13 @@ from pycatan.errors import (
     RequiresSettlementError,
 )
 from pycatan.resource import Resource
-from .helpers import get_resource_hand, add_free_settlement, add_free_city
+from .helpers import (
+    get_resource_hand,
+    add_free_settlement,
+    add_free_city,
+    add_free_road,
+    add_road_from_path,
+)
 
 ONE_HEX_COORDS = {Coords(0, 0)}
 SMALL_BOARD_COORDS = {
@@ -102,7 +108,7 @@ def test_board_generates_edges_many_hexes():
 def test_board_properly_keys_edges():
     board = generate_board_from_hex_coords(SMALL_BOARD_COORDS)
     for key, edge in board.edges.items():
-        assert edge.coords == set(key)
+        assert edge.edge_coords == set(key)
 
 
 def test_cannot_build_in_middle_of_hex():
@@ -354,3 +360,90 @@ def test_board_adds_harbors_to_players():
     add_free_settlement(b, p, Coords(3, -4))
     assert len([h for h in p.connected_harbors if h.resource == Resource.GRAIN]) == 1
     assert len([h for h in p.connected_harbors if h.resource == Resource.LUMBER]) == 1
+
+
+def test_get_longest_road():
+    b = BeginnerBoard()
+    p = Player()
+    assert b.calculate_player_longest_road(p) == 0
+    add_free_road(b, p, edge_coords={Coords(1, 0), Coords(0, 1)})
+    assert b.calculate_player_longest_road(p) == 1
+    add_free_road(b, p, edge_coords={Coords(0, 2), Coords(0, 1)})
+    add_free_road(b, p, edge_coords={Coords(0, 2), Coords(-1, 3)})
+    add_free_road(b, p, edge_coords={Coords(0, 2), Coords(1, 2)})
+    add_free_road(b, p, edge_coords={Coords(1, 2), Coords(2, 1)})
+    assert b.calculate_player_longest_road(p) == 4
+
+
+def test_get_longest_road_complicated():
+    b = BeginnerBoard()
+    p = Player()
+    road_paths = (
+        (
+            Coords(1, -3),
+            Coords(2, -3),
+            Coords(3, -4),
+            Coords(4, -4),
+            Coords(4, -3),
+            Coords(5, -3),
+        ),
+        (
+            Coords(-1, 4),
+            Coords(-1, 3),
+            Coords(0, 2),
+            Coords(0, 1),
+            Coords(1, 0),
+            Coords(1, -1),
+            Coords(0, -1),
+            Coords(-1, 0),
+            Coords(-1, 1),
+        ),
+        (
+            Coords(-4, 0),
+            Coords(-3, -1),
+            Coords(-2, -1),
+            Coords(-1, -2),
+            Coords(0, -2),
+            Coords(1, -3),
+            Coords(1, -4),
+        ),
+    )
+    # Add the first road path
+    add_road_from_path(b, p, road_paths[0])
+    assert b.calculate_player_longest_road(p) == 5
+    # Add the second path
+    add_road_from_path(b, p, road_paths[1])
+    assert b.calculate_player_longest_road(p) == 8
+    # Add the third path
+    add_road_from_path(b, p, road_paths[2])
+    assert b.calculate_player_longest_road(p) == 10
+
+
+def test_calculate_longest_road_multiple_players():
+    b = BeginnerBoard()
+    p1 = Player()
+    p2 = Player()
+    road_paths = (
+        (
+            Coords(5, -2),
+            Coords(5, -3),
+            Coords(4, -3),
+            Coords(4, -4),
+            Coords(3, -4),
+            Coords(3, -5),
+        ),
+        (Coords(3, -4), Coords(2, -3), Coords(2, -2), Coords(1, -1), Coords(1, 0)),
+        (Coords(2, -2), Coords(3, -2), Coords(3, -1), Coords(4, -1), Coords(5, -2)),
+    )
+    # Add the first road
+    add_road_from_path(b, p1, road_paths[0])
+    assert b.calculate_player_longest_road(p1) == 5
+    assert b.calculate_player_longest_road(p2) == 0
+    # Add the second path
+    add_road_from_path(b, p2, road_paths[1])
+    assert b.calculate_player_longest_road(p1) == 5
+    assert b.calculate_player_longest_road(p2) == 4
+    # Add the third path
+    add_road_from_path(b, p2, road_paths[2])
+    assert b.calculate_player_longest_road(p1) == 5
+    assert b.calculate_player_longest_road(p2) == 6
