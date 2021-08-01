@@ -1,9 +1,12 @@
 from typing import Dict, Set
+from random import shuffle
+
 from .player import Player
 from .coords import Coords
 from .roll_yield import RollYield
 from .errors import NotEnoughResourcesError
 from .building_type import BuildingType
+from .development_card import DevelopmentCard
 
 
 class Game:
@@ -19,12 +22,22 @@ class Game:
             players (List[Player]): The players in the game, ordered by (recommended) turn order
             longest_road_owner (Player): The player who has the longest road token, or None if no players
                 have a road of at least 3 length
+            development_card_deck (List[DevelopmentCard]): The deck of development cards
     """
 
     def __init__(self, board, num_players=4):
         self.board = board
         self.players = [Player() for i in range(num_players)]
         self.longest_road_owner = None
+        self.development_card_deck = (
+            14 * [DevelopmentCard.KNIGHT]
+            + 5 * [DevelopmentCard.VICTORY_POINT]
+            + 2 * [DevelopmentCard.ROAD_BUILDING]
+            + 2 * [DevelopmentCard.YEAR_OF_PLENTY]
+            + 2 * [DevelopmentCard.MONOPOLY]
+        )
+
+        shuffle(self.development_card_deck)
 
     def build_settlement(
         self,
@@ -168,3 +181,22 @@ class Game:
             raise ValueError("coords is no a valid hex coordinate")
 
         self.board.robber = coords
+
+    def build_development_card(self, player) -> DevelopmentCard:
+        """Build a development card
+        Args:
+            player (Player): The player building the development card
+        Raises:
+            NotEnoughResourcesError: If the player cannot afford to build a development card
+        Returns:
+            DevelopmentCard: The card that the player built and has been added to their hand
+        """
+        if not player.has_resources(DevelopmentCard.get_required_resources()):
+            raise NotEnoughResourcesError(
+                "Player does not have enough resources to build a development card"
+            )
+
+        card = self.development_card_deck.pop(0)
+        player.development_cards[card] += 1
+        player.remove_resources(DevelopmentCard.get_required_resources())
+        return card

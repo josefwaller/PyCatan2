@@ -224,3 +224,17 @@ def test_can_steal_longest_road():
     # But you can steal it
     build_road_along_path(g, g.players[1], paths[2])
     assert g.longest_road_owner is g.players[1]
+
+
+def test_can_build_dev_card():
+    g = Game(BeginnerBoard())
+    g.players[0].add_resources(get_resource_hand(wool=1, grain=1, ore=1))
+    g.build_development_card(g.players[0])
+    assert g.players[0].resources == get_resource_hand()
+    assert len([d for d, n in g.players[0].development_cards.items() if n > 0]) == 1
+
+
+def test_cant_build_dev_card_no_resources():
+    g = Game(BeginnerBoard())
+    with pytest.raises(NotEnoughResourcesError):
+        g.build_development_card(g.players[0])

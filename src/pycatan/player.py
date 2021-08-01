@@ -2,6 +2,7 @@ from typing import Dict, List
 
 from .resource import Resource
 from .errors import NotEnoughResourcesError
+from .development_card import DevelopmentCard
 
 
 class Player:
@@ -15,7 +16,7 @@ class Player:
 
     def __init__(self):
         self.resources: Dict[Resource, int] = {res: 0 for res in Resource}
-        self.development_cards = {}
+        self.development_cards = {d: 0 for d in DevelopmentCard}
         self.connected_harbors = set()
 
     def has_resources(self, resources: Dict[Resource, int]) -> bool:
