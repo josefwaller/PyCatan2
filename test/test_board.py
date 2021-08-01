@@ -6,13 +6,14 @@ from pycatan.coords import Coords
 from pycatan.hex import Hex, HexType
 from pycatan.building_type import BuildingType
 from pycatan.player import Player
-from pycatan.resource import Resource
 from pycatan.errors import (
     InvalidCoordsError,
     TooCloseToBuildingError,
     CoordsBlockedError,
     NotConnectedError,
+    RequiresSettlementError,
 )
+from .helpers import get_resource_hand, add_free_city
 
 ONE_HEX_COORDS = {Coords(0, 0)}
 SMALL_BOARD_COORDS = {
@@ -24,16 +25,6 @@ SMALL_BOARD_COORDS = {
     Coords(-1, -1),
     Coords(1, -2),
 }
-
-
-def get_yield(lumber=0, wool=0, brick=0, ore=0, grain=0):
-    return {
-        Resource.LUMBER: lumber,
-        Resource.WOOL: wool,
-        Resource.BRICK: brick,
-        Resource.ORE: ore,
-        Resource.GRAIN: grain,
-    }
 
 
 def generate_board_from_hex_coords(coords: Set[Coords]):
@@ -180,9 +171,9 @@ def test_board_get_yield():
         building_type=BuildingType.SETTLEMENT,
         ensure_connected=False,
     )
-    assert board.get_yield_for_roll(6)[player].total_yield == get_yield(brick=1)
-    assert board.get_yield_for_roll(2)[player].total_yield == get_yield(wool=1)
-    assert board.get_yield_for_roll(4)[player].total_yield == get_yield(wool=1)
+    assert board.get_yield_for_roll(6)[player].total_yield == get_resource_hand(brick=1)
+    assert board.get_yield_for_roll(2)[player].total_yield == get_resource_hand(wool=1)
+    assert board.get_yield_for_roll(4)[player].total_yield == get_resource_hand(wool=1)
 
 
 def test_board_get_yield_multiple_hexes():
@@ -200,7 +191,7 @@ def test_board_get_yield_multiple_hexes():
         building_type=BuildingType.SETTLEMENT,
         ensure_connected=False,
     )
-    assert board.get_yield_for_roll(6)[player].total_yield == get_yield(
+    assert board.get_yield_for_roll(6)[player].total_yield == get_resource_hand(
         lumber=2, brick=1
     )
 
@@ -252,3 +243,63 @@ def test_cannot_add_road_on_top_of_other():
         board.add_edge_building(
             player=player, edge_coords=edge_coords, building_type=BuildingType.ROAD
         )
+
+
+def test_cannot_add_city_invalid_coords():
+    board = BeginnerBoard()
+    player = Player()
+    with pytest.raises(InvalidCoordsError):
+        board.add_corner_building(player, Coords(0, 0), building_type=BuildingType.CITY)
+
+
+def test_cannot_add_city_without_settlement():
+    board = BeginnerBoard()
+    player = Player()
+    with pytest.raises(RequiresSettlementError):
+        board.add_corner_building(player, Coords(1, 0), building_type=BuildingType.CITY)
+
+
+def test_cannot_add_city_on_top_of_other_player_settlement():
+    board = BeginnerBoard()
+    pOne = Player()
+    pTwo = Player()
+    board.add_corner_building(
+        pOne,
+        Coords(1, 0),
+        building_type=BuildingType.SETTLEMENT,
+        ensure_connected=False,
+    )
+    with pytest.raises(RequiresSettlementError):
+        board.add_corner_building(pTwo, Coords(1, 0), building_type=BuildingType.CITY)
+
+
+def test_can_add_city():
+    b = BeginnerBoard()
+    p = Player()
+    add_free_city(b, p, Coords(0, -1))
+    assert b.corners[Coords(0, -1)].building.building_type == BuildingType.CITY
+
+
+def test_city_adds_twice_yield_for_city():
+    b = BeginnerBoard()
+    p = Player()
+    add_free_city(b, p, Coords(-1, 0))
+    assert b.get_yield_for_roll(4)[p].total_yield == get_resource_hand(grain=2)
+
+
+def test_city_adds_twice_many_hexes():
+    b = BeginnerBoard()
+    p = Player()
+    add_free_city(b, p, Coords(0, 2))
+    assert b.get_yield_for_roll(3)[p].total_yield == get_resource_hand(lumber=2)
+    assert b.get_yield_for_roll(10)[p].total_yield == get_resource_hand(brick=2)
+    assert b.get_yield_for_roll(4)[p].total_yield == get_resource_hand(wool=2)
+
+
+def test_city_add_twice_many_cities():
+    b = BeginnerBoard()
+    p = Player()
+    add_free_city(b, p, Coords(1, 0))
+    add_free_city(b, p, Coords(2, -2))
+    add_free_city(b, p, Coords(3, -1))
+    assert b.get_yield_for_roll(6)[p].total_yield == get_resource_hand(brick=6)

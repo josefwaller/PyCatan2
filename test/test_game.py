@@ -10,6 +10,8 @@ from pycatan.board import BeginnerBoard
 from pycatan.building_type import BuildingType
 from pycatan.errors import NotEnoughResourcesError
 
+from .helpers import get_resource_hand
+
 
 def get_roll_yield(lumber=0, brick=0, grain=0, ore=0, wool=0):
     """Gets a test roll yield. Does not set source so don't use in tests that test that"""
@@ -139,3 +141,34 @@ def test_game_build_some_valid_settlements_and_roads():
     g.build_road(player=g.players[0], edge_coords={Coords(1, 0), Coords(1, -1)})
     g.build_road(player=g.players[0], edge_coords={Coords(1, -1), Coords(0, -1)})
     g.build_settlement(player=g.players[0], coords=Coords(0, -1))
+
+
+def test_upgrade_city_free():
+    g = Game(BeginnerBoard())
+    g.build_settlement(
+        g.players[0], Coords(1, 0), cost_resources=False, ensure_connected=False
+    )
+    g.upgrade_settlement_to_city(g.players[0], Coords(1, 0), cost_resources=False)
+    assert g.board.corners[Coords(1, 0)].building.building_type == BuildingType.CITY
+
+
+def test_update_city_not_enough_resources():
+    g = Game(BeginnerBoard())
+    g.build_settlement(
+        g.players[0], Coords(1, 0), cost_resources=False, ensure_connected=False
+    )
+    with pytest.raises(NotEnoughResourcesError):
+        g.upgrade_settlement_to_city(g.players[0], Coords(1, 0))
+
+
+def test_update_city_costs_resources():
+    g = Game(BeginnerBoard())
+    g.build_settlement(
+        g.players[0], Coords(1, 0), cost_resources=False, ensure_connected=False
+    )
+    g.players[0].add_resources(
+        {Resource.LUMBER: 2, Resource.BRICK: 2, Resource.ORE: 3, Resource.GRAIN: 3}
+    )
+    g.upgrade_settlement_to_city(g.players[0], Coords(1, 0))
+    assert g.board.corners[Coords(1, 0)].building.building_type == BuildingType.CITY
+    assert g.players[0].resources == get_resource_hand(lumber=2, brick=2, grain=1)

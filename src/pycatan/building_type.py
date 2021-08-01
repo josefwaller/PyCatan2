@@ -18,4 +18,4 @@ class BuildingType(Enum):
                 Resource.GRAIN: 1,
             }
         elif self == BuildingType.CITY:
-            return {Resource.ORE: 3, Resource.GRAIN: 3}
+            return {Resource.ORE: 3, Resource.GRAIN: 2}

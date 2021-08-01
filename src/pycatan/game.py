@@ -96,6 +96,34 @@ class Game:
         if cost_resources:
             player.remove_resources(BuildingType.ROAD.get_required_resources())
 
+    def upgrade_settlement_to_city(
+        self, player: Player, coords: Coords, cost_resources: bool = True
+    ) -> None:
+        """Builds a city from a settlement in the Catan game
+        Args:
+            player (Player): The player who is building the city
+            coords (Coords): Where to build the city
+            cost_resources (bool): Whether to remove the resources from the player's hand
+        Raises:
+            NotEnoughResourcesError: If cost_resources is true and the player doesn't have enough resources
+            ValueError: If coords is not a valid corner
+            RequiresSettlementError: If there is not a valid settlement at the corner to upgrade
+        """
+
+        if cost_resources and not player.has_resources(
+            BuildingType.CITY.get_required_resources()
+        ):
+            raise NotEnoughResourcesError(
+                "Player does not have the resources to build a city"
+            )
+
+        self.board.add_corner_building(
+            player=player, coords=coords, building_type=BuildingType.CITY
+        )
+
+        if cost_resources:
+            player.remove_resources(BuildingType.CITY.get_required_resources())
+
     def add_yield_for_roll(self, roll) -> None:
         """Compute what resources players would receive if `roll` was rolled, and
         then add those resources to the player's hands.

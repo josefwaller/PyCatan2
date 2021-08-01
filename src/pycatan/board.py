@@ -162,9 +162,7 @@ class Board:
                 % building_type
             )
 
-        self.corners[coords].building = CornerBuilding(
-            player, BuildingType.SETTLEMENT, coords
-        )
+        self.corners[coords].building = CornerBuilding(player, building_type, coords)
 
     def assert_valid_settlement_coords(
         self, coords: Coords, player: Player, ensure_connected
@@ -262,6 +260,7 @@ class Board:
                 resource = hex.hex_type.get_resource()
                 # Check around the hex for any settlements/cities
                 for corner in self.get_connected_hex_corners(hex):
+                    print(corner.coords)
                     if corner.building is not None:
                         owner = corner.building.owner
                         if owner not in total_yield.keys():
