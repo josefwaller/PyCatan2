@@ -94,3 +94,48 @@ def test_game_build_settlement_with_resources():
         len([r for r in g.players[0].resources.keys() if g.players[0].resources[r] > 0])
         == 0
     )
+
+
+def test_game_build_road_free():
+    g = Game(BeginnerBoard())
+    g.build_road(
+        g.players[0],
+        edge_coords={Coords(1, -1), Coords(1, 0)},
+        check_resources=False,
+        check_connection=False,
+    )
+    assert g.board.edges[frozenset([Coords(1, -1), Coords(1, 0)])].building is not None
+    assert (
+        g.board.edges[frozenset([Coords(1, -1), Coords(1, 0)])].building.owner
+        == g.players[0]
+    )
+    assert (
+        g.board.edges[frozenset([Coords(1, -1), Coords(1, 0)])].building.building_type
+        == BuildingType.ROAD
+    )
+
+
+def test_game_build_road_no_resources():
+    g = Game(BeginnerBoard())
+    with pytest.raises(NotEnoughResourcesError):
+        g.build_road(
+            g.players[0],
+            edge_coords={Coords(1, -1), Coords(1, 0)},
+            check_connection=False,
+        )
+
+
+def test_game_build_some_valid_settlements_and_roads():
+    g = Game(BeginnerBoard())
+    g.build_settlement(
+        player=g.players[0],
+        coords=Coords(1, 0),
+        check_resources=False,
+        check_connection=False,
+    )
+    g.players[0].add_resources(
+        {Resource.LUMBER: 3, Resource.BRICK: 3, Resource.GRAIN: 1, Resource.WOOL: 1}
+    )
+    g.build_road(player=g.players[0], edge_coords={Coords(1, 0), Coords(1, -1)})
+    g.build_road(player=g.players[0], edge_coords={Coords(1, -1), Coords(0, -1)})
+    g.build_settlement(player=g.players[0], coords=Coords(0, -1))

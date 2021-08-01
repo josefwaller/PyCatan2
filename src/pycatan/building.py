@@ -1,3 +1,4 @@
+from typing import Set
 from .player import Player
 from .building_type import BuildingType
 from .coords import Coords
@@ -38,3 +39,25 @@ class CornerBuilding(Building):
     def __init__(self, owner: Player, building_type: BuildingType, coords: Coords):
         super().__init__(owner, building_type)
         self.coords = coords
+
+
+class EdgeBuilding(Building):
+    """A building that is built on an edge
+    I.e. a road
+
+    Attributes:
+            owner (Player): The player who owns this building
+            building_type (BuildingType): The type of building this is
+            edge_coords (Set[Coords]): The coordinates of the two corners the building is connecting
+
+    Args:
+            owner (Player): The player who owns this building
+            building_type (BuildingType): The type of building this is
+            edge_coords (Set[Coords]): The coordinates of the two corners the building is connecting
+    """
+
+    def __init__(
+        self, owner: Player, building_type: BuildingType, edge_coords: Set[Coords]
+    ):
+        super().__init__(owner, building_type)
+        self.edge_coords = edge_coords

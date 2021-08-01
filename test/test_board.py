@@ -203,3 +203,52 @@ def test_board_get_yield_multiple_hexes():
     assert board.get_yield_for_roll(6)[player].total_yield == get_yield(
         lumber=2, brick=1
     )
+
+
+def test_cannot_add_isolated_road():
+    board = BeginnerBoard()
+    player = Player()
+    with pytest.raises(NotConnectedError):
+        board.add_edge_building(
+            player=player,
+            edge_coords={Coords(1, 0), Coords(1, -1)},
+            building_type=BuildingType.ROAD,
+        )
+
+
+def test_cannot_add_road_between_unconnected_corners():
+    board = BeginnerBoard()
+    player = Player()
+    with pytest.raises(ValueError):
+        board.add_edge_building(
+            player=player,
+            edge_coords={Coords(0, -1), Coords(0, 1)},
+            building_type=BuildingType.ROAD,
+        )
+
+
+def test_cannot_add_road_to_middle_of_hex():
+    board = BeginnerBoard()
+    player = Player()
+    with pytest.raises(ValueError):
+        board.add_edge_building(
+            player=player,
+            edge_coords={Coords(0, -2), Coords(0, 0)},
+            building_type=BuildingType.ROAD,
+        )
+
+
+def test_cannot_add_road_on_top_of_other():
+    board = BeginnerBoard()
+    player = Player()
+    edge_coords = {Coords(1, 0), Coords(0, 1)}
+    board.add_edge_building(
+        player=player,
+        edge_coords=edge_coords,
+        building_type=BuildingType.ROAD,
+        check_connection=False,
+    )
+    with pytest.raises(CoordsBlockedError):
+        board.add_edge_building(
+            player=player, edge_coords=edge_coords, building_type=BuildingType.ROAD
+        )

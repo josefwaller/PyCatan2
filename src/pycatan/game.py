@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Set
 from .player import Player
 from .coords import Coords
 from .roll_yield import RollYield
@@ -56,6 +56,30 @@ class Game:
         # Remove the resources
         if check_resources:
             player.remove_resources(BuildingType.SETTLEMENT.get_required_resources())
+
+    def build_road(
+        self,
+        player: Player,
+        edge_coords: Set[Coords],
+        check_resources: bool = True,
+        check_connection: bool = True,
+    ):
+        # Check the player has the resources
+        if check_resources and not player.has_resources(
+            BuildingType.ROAD.get_required_resources()
+        ):
+            raise NotEnoughResourcesError(
+                "Player doesn not have the resources to build a road"
+            )
+        self.board.add_edge_building(
+            player=player,
+            edge_coords=edge_coords,
+            building_type=BuildingType.ROAD,
+            check_connection=check_connection,
+        )
+        # Remove the resources
+        if check_resources:
+            player.remove_resources(BuildingType.ROAD.get_required_resources())
 
     def add_yield_for_roll(self, roll) -> None:
         """Compute what resources players would receive if `roll` was rolled, and

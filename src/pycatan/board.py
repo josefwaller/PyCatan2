@@ -7,7 +7,7 @@ from .hex_type import HexType
 from .corner import Corner
 from .edge import Edge
 from .player import Player
-from .building import CornerBuilding
+from .building import CornerBuilding, EdgeBuilding
 from .building_type import BuildingType
 from .errors import (
     InvalidCoordsError,
@@ -64,6 +64,62 @@ class Board:
                 coord = c + offset
                 if coord in self.corners:
                     self.edges[frozenset([c, c + offset])] = Edge(set([c, c + offset]))
+
+    def add_edge_building(
+        self,
+        player: Player,
+        building_type: BuildingType,
+        edge_coords: Set[Coords],
+        check_connection: bool = True,
+    ):
+        for c in edge_coords:
+            if c not in self.corners.keys():
+                raise ValueError(
+                    "Invalid edge: Edges must connect two corners on the board. %s is not a corner"
+                    % c
+                )
+
+        if frozenset(edge_coords) not in self.edges.keys():
+            raise ValueError("Invalid edge: Edge does not exist")
+
+        edge: Edge = self.edges[frozenset(edge_coords)]
+        if edge.building is not None:
+            raise CoordsBlockedError("There is already a building on this edge")
+
+        if check_connection:
+            # Check if it's connected to a corner building
+            valid_buildings = set(
+                filter(
+                    lambda b: b is not None and b.owner is player,
+                    map(lambda c: self.corners[c].building, edge_coords),
+                )
+            )
+            if len(valid_buildings) == 0:
+                # Check if it's connected to another edge building
+                edges_connected = set()
+                for coords in edge_coords:
+                    for c in self.get_corner_connected_corners(self.corners[coords]):
+                        print(coords, c.coords)
+                        edges_connected.add(self.edges[frozenset([coords, c.coords])])
+                if (
+                    len(
+                        set(
+                            filter(
+                                lambda e: e.building is not None
+                                and e.building.owner is player,
+                                edges_connected,
+                            )
+                        )
+                    )
+                    == 0
+                ):
+                    raise NotConnectedError(
+                        "Edge building is not connected to any other building"
+                    )
+        # Add the building
+        self.edges[frozenset(edge_coords)].building = EdgeBuilding(
+            player, edge_coords=edge_coords, building_type=building_type
+        )
 
     def add_corner_building(
         self,
@@ -130,13 +186,12 @@ class Board:
                 map(lambda c: frozenset({coords, c.coords}), connected_corners)
             )
             edges = set(map(lambda e: self.edges[e], edge_coords))
-            print(edges)
             if (
                 len(
                     set(
                         filter(
                             lambda edge: edge.building is not None
-                            and edge.building.owner is not player,
+                            and edge.building.owner is player,
                             edges,
                         )
                     )
