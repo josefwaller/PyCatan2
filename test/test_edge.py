@@ -1,5 +1,4 @@
-from pycatan.path import Path
-from pycatan.coords import Coords
+from pycatan.board import Path, Coords
 
 
 def test_path_holds_coords():

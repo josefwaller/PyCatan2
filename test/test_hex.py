@@ -1,6 +1,4 @@
-from pycatan.hex import Hex
-from pycatan.coords import Coords
-from pycatan.hex_type import HexType
+from pycatan.board import Hex, Coords, HexType
 
 
 def test_hex_holds_coords():

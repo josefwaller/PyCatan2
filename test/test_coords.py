@@ -1,4 +1,4 @@
-from pycatan.coords import Coords
+from pycatan.board import Coords
 
 
 def test_two_coords_are_equal():

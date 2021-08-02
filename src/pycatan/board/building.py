@@ -1,5 +1,5 @@
 from typing import Set
-from .player import Player
+from ..player import Player
 from .building_type import BuildingType
 from .coords import Coords
 

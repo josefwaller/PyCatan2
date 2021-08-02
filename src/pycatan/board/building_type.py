@@ -1,5 +1,5 @@
 from enum import Enum
-from .resource import Resource
+from ..resource import Resource
 
 
 class BuildingType(Enum):

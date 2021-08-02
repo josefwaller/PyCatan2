@@ -1,7 +1,7 @@
 from typing import Set
 
 from .coords import Coords
-from .resource import Resource
+from ..resource import Resource
 
 
 class Harbor:

@@ -1,5 +1,4 @@
-from pycatan.intersection import Intersection
-from pycatan.coords import Coords
+from pycatan.board import Intersection, Coords
 
 
 def test_intersection_holds_coords():

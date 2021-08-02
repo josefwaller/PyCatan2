@@ -1,6 +1,6 @@
 from .resource import Resource
-from .building import IntersectionBuilding
-from .hex import Hex
+from .board.building import IntersectionBuilding
+from .board.hex import Hex
 
 
 class RollYieldSource:

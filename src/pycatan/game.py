@@ -2,10 +2,10 @@ from typing import Dict, Set
 from random import shuffle
 
 from .player import Player
-from .coords import Coords
+from .board.coords import Coords
 from .roll_yield import RollYield
 from .errors import NotEnoughResourcesError
-from .building_type import BuildingType
+from .board.building_type import BuildingType
 from .development_card import DevelopmentCard
 
 

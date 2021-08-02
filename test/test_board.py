@@ -1,11 +1,8 @@
 from typing import Set
 import pytest
 
-from pycatan.board import Board, BeginnerBoard
-from pycatan.coords import Coords
-from pycatan.hex import Hex, HexType
-from pycatan.building_type import BuildingType
-from pycatan.player import Player
+from pycatan.board import Board, BeginnerBoard, Coords, Hex, HexType, BuildingType
+from pycatan import Player, Resource
 from pycatan.errors import (
     InvalidCoordsError,
     TooCloseToBuildingError,
@@ -13,7 +10,6 @@ from pycatan.errors import (
     NotConnectedError,
     RequiresSettlementError,
 )
-from pycatan.resource import Resource
 from .helpers import (
     get_resource_hand,
     add_free_settlement,

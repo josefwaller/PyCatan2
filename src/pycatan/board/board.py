@@ -6,19 +6,18 @@ from .hex import Hex
 from .hex_type import HexType
 from .intersection import Intersection
 from .path import Path
-from .player import Player
+from ..player import Player
 from .building import IntersectionBuilding, PathBuilding
 from .harbor import Harbor
 from .building_type import BuildingType
-from .resource import Resource
-from .errors import (
+from ..errors import (
     InvalidCoordsError,
     TooCloseToBuildingError,
     CoordsBlockedError,
     RequiresSettlementError,
     NotConnectedError,
 )
-from .roll_yield import RollYield, RollYieldSource
+from ..roll_yield import RollYield, RollYieldSource
 
 
 class Board:
@@ -49,7 +48,9 @@ class Board:
                     robber (Set[Coords]): The location of the robber
     """
 
-    def __init__(self, hexes: Set[Hex], harbors=set(), robber: Coords = None):
+    def __init__(
+        self, hexes: Set[Hex], harbors: Set[Harbor] = set(), robber: Coords = None
+    ):
         self.hexes: Dict[Coords, Hex] = dict(zip((h.coords for h in hexes), hexes))
         self.harbors = {frozenset(h.path_coords): h for h in harbors}
         # Position the robber on the desert
@@ -355,51 +356,3 @@ class Board:
             Set[Path]: A set of the paths attached to that intersection
         """
         return set(filter(lambda e: coords in e.path_coords, self.paths.values()))
-
-
-class BeginnerBoard(Board):
-    """The beginner board, as outlined in the Catan rules"""
-
-    def __init__(self):
-        super().__init__(
-            hexes={
-                Hex(Coords(4, -2), HexType.MOUNTAINS, 10),
-                Hex(Coords(3, 0), HexType.PASTURE, 2),
-                Hex(Coords(2, 2), HexType.FOREST, 9),
-                Hex(Coords(3, -3), HexType.FIELDS, 12),
-                Hex(Coords(2, -1), HexType.HILLS, 6),
-                Hex(Coords(1, 1), HexType.PASTURE, 4),
-                Hex(Coords(0, 3), HexType.HILLS, 10),
-                Hex(Coords(2, -4), HexType.FIELDS, 9),
-                Hex(Coords(1, -2), HexType.FOREST, 11),
-                Hex(Coords(0, 0), HexType.DESERT),
-                Hex(Coords(-1, 2), HexType.FOREST, 3),
-                Hex(Coords(-2, 4), HexType.MOUNTAINS, 8),
-                Hex(Coords(0, -3), HexType.FOREST, 8),
-                Hex(Coords(-1, -1), HexType.MOUNTAINS, 3),
-                Hex(Coords(-2, 1), HexType.FIELDS, 4),
-                Hex(Coords(-3, 3), HexType.PASTURE, 5),
-                Hex(Coords(-2, -2), HexType.HILLS, 5),
-                Hex(Coords(-3, 0), HexType.FIELDS, 6),
-                Hex(Coords(-4, 2), HexType.PASTURE, 11),
-            },
-            harbors=[
-                Harbor(
-                    path_coords={Coords(4, 0), Coords(3, 1)}, resource=Resource.GRAIN
-                ),
-                Harbor(path_coords={Coords(1, 3), Coords(0, 4)}, resource=Resource.ORE),
-                Harbor(path_coords={Coords(-2, 5), Coords(-3, 5)}, resource=None),
-                Harbor(
-                    path_coords={Coords(-4, 3), Coords(-4, 4)}, resource=Resource.WOOL
-                ),
-                Harbor(path_coords={Coords(-4, 0), Coords(-4, 1)}, resource=None),
-                Harbor(path_coords={Coords(-2, -3), Coords(-3, -2)}, resource=None),
-                Harbor(
-                    path_coords={Coords(2, -5), Coords(3, -5)}, resource=Resource.BRICK
-                ),
-                Harbor(
-                    path_coords={Coords(3, -4), Coords(4, -4)}, resource=Resource.LUMBER
-                ),
-                Harbor(path_coords={Coords(5, -3), Coords(5, -2)}, resource=None),
-            ],
-        )

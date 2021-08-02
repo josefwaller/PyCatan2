@@ -1,7 +1,6 @@
 import pytest
 
-from pycatan.player import Player
-from pycatan.resource import Resource
+from pycatan import Player, Resource
 from pycatan.errors import NotEnoughResourcesError
 
 from .helpers import (

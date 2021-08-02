@@ -1,7 +1,7 @@
 from typing import Dict
 
-from pycatan.hex_type import HexType
-from pycatan.resource import Resource
+from pycatan.board import HexType
+from pycatan import Resource
 
 MAP_HEX_TYPE_TO_RESOURCE: Dict[HexType, Resource] = {
     HexType.FOREST: Resource.LUMBER,

@@ -1,15 +1,9 @@
 from typing import Dict
 import pytest
 
-from pycatan.player import Player
-from pycatan.coords import Coords
-from pycatan.game import Game
-from pycatan.roll_yield import RollYield
-from pycatan.resource import Resource
-from pycatan.board import BeginnerBoard
-from pycatan.building_type import BuildingType
+from pycatan import Player, Game, RollYield, Resource, DevelopmentCard
 from pycatan.errors import NotEnoughResourcesError
-from pycatan.development_card import DevelopmentCard
+from pycatan.board import Coords, BeginnerBoard, BuildingType
 
 from .helpers import get_resource_hand, build_road_along_path
 

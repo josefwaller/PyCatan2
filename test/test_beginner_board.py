@@ -1,5 +1,4 @@
-from pycatan.board import BeginnerBoard
-from pycatan.hex import Hex
+from pycatan.board import BeginnerBoard, Hex
 
 
 def test_no_hexes_are_adjacent():

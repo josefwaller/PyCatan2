@@ -1,12 +1,7 @@
 from typing import Set
 
-from pycatan.game import Game
-from pycatan.resource import Resource
-from pycatan.board import Board
-from pycatan.player import Player
-from pycatan.coords import Coords
-from pycatan.building_type import BuildingType
-from pycatan.harbor import Harbor
+from pycatan import Game, Resource, Player
+from pycatan.board import Board, Coords, BuildingType, Harbor
 
 
 def get_resource_hand(lumber=0, wool=0, brick=0, ore=0, grain=0):
