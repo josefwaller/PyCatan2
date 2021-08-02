@@ -10,6 +10,17 @@ from ..resource import Resource
 
 
 class BoardRenderer:
+    """A utility class for rendering catan board in the terminal
+    Used when calling print(Board)
+    Args:
+        player_color_map (Dict[Player, str], optional):
+            A map of which colors to use for which players. Colors are string hex codes (i.e. '#FF0000')
+        hex_color_map (Dict[HexType, str], optional):
+            A map of which colors to use for the different types of hexes. Colors are string hex codes (i.e. '#FF00000')
+        resource_color_map (Dict[HexType, str], optional):
+            A map of which colors to use for the different resource harbors. Colors are string hex codes (i.e. '#FF00000')
+    """
+
     DEFAULT_PLAYER_COLORS = ["#00c40d", "#ff00d9", "#0000FF", "#00FFFF"]
 
     DEFAULT_HEX_COLORS = {
@@ -146,18 +157,25 @@ class BoardRenderer:
             for c in connected_coords[0]
             if c in connected_coords[1] and c not in board.hexes
         ]
-        hex_coords = self.get_hex_center_coords(overlap[0])
+        hex_coords = self._get_hex_center_coords(overlap[0])
         return (hex_coords[0] + 2, hex_coords[1] + 1)
 
-    def copy_into_array(self, buf, to_copy, x, y):
+    def _copy_into_array(self, buf, to_copy, x, y):
         for i in range(len(to_copy)):
             for j in range(len(to_copy[i])):
                 buf[y + i][x + j] = to_copy[i][j]
 
-    def get_hex_center_coords(self, coords):
+    def _get_hex_center_coords(self, coords):
         return ((int)(3 * coords.r), -(int)(1.34 * coords.q + 0.67 * coords.r))
 
-    def get_board_as_string(self, board: board.Board):
+    def get_board_as_string(self, board: board.Board) -> str:
+        """Get the board as a large, multiline string that includes colors
+        Args:
+            board (Board): The board to get the string for
+
+        Returns:
+            str: The board as a string
+        """
         size = 20, 55
         buf = [
             [stylize(" ", bg(BoardRenderer.WATER_COLOR)) for j in range(size[1])]
@@ -167,18 +185,18 @@ class BoardRenderer:
         center = int(size[1] / 2) - 3, int(size[0] / 2) - 1
 
         for hex_coords in board.hexes:
-            x, y = self.get_hex_center_coords(hex_coords)
-            self.copy_into_array(
+            x, y = self._get_hex_center_coords(hex_coords)
+            self._copy_into_array(
                 buf, self._get_hex(board, hex_coords), center[0] + x, center[1] + y
             )
         for harbor in board.harbors.values():
             x, y = self._get_harbor_coords(harbor, board)
-            self.copy_into_array(
+            self._copy_into_array(
                 buf, self._get_harbor(harbor), center[0] + x, center[1] + y
             )
 
-        x, y = self.get_hex_center_coords(board.robber)
-        self.copy_into_array(
+        x, y = self._get_hex_center_coords(board.robber)
+        self._copy_into_array(
             buf,
             [[stylize("R", fg("#FFFFFF") + bg("#000000"))]],
             center[0] + x + 4,
@@ -188,5 +206,9 @@ class BoardRenderer:
         return "\n".join(["".join(row) for row in buf])
 
     def render_board(self, board: board.Board):
+        """Renders the board into the terminal
+        Args:
+            board (Board): The board to render
+        """
         buf = self.get_board_as_string(board)
         print(buf)
