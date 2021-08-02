@@ -8,6 +8,7 @@ authors = ["Josef Waller <josef@siriusapplications.com>"]
 python = "^3.8"
 flake8 = "^3.9.2"
 black = "^21.7b0"
+colored = "^1.4.2"
 
 [tool.poetry.dev-dependencies]
 coverage = {extras = ["toml"], version = "^5.5"}

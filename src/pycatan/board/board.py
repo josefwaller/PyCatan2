@@ -279,6 +279,15 @@ class Board:
             )
         )
 
+    def get_hex_connected_to_intersection(self, intersection_coords):
+        return set(
+            [
+                intersection_coords + c
+                for c in Hex.CONNECTED_CORNER_OFFSETS
+                if intersection_coords + c in self.hexes
+            ]
+        )
+
     def get_yield_for_roll(self, roll) -> Dict[Player, RollYield]:
         total_yield: Dict[Player, RollYield] = {}
         for hex in self.hexes.values():

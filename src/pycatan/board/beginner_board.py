@@ -44,7 +44,7 @@ class BeginnerBoard(Board):
                 Harbor(path_coords={Coords(-4, 0), Coords(-4, 1)}, resource=None),
                 Harbor(path_coords={Coords(-2, -3), Coords(-3, -2)}, resource=None),
                 Harbor(
-                    path_coords={Coords(2, -5), Coords(3, -5)}, resource=Resource.BRICK
+                    path_coords={Coords(2, -5), Coords(1, -4)}, resource=Resource.BRICK
                 ),
                 Harbor(
                     path_coords={Coords(3, -4), Coords(4, -4)}, resource=Resource.LUMBER
