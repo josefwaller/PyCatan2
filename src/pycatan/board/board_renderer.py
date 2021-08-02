@@ -1,10 +1,8 @@
 from colored import stylize, fg, bg
 
-from ..game import Game
-from .board import Board
+from . import board
 from .coords import Coords
 from ..player import Player
-from .beginner_board import BeginnerBoard
 from .hex_type import HexType
 from .building_type import BuildingType
 from .hex import Hex
@@ -159,7 +157,7 @@ class BoardRenderer:
     def get_hex_center_coords(self, coords):
         return ((int)(3 * coords.r), -(int)(1.34 * coords.q + 0.67 * coords.r))
 
-    def render_board(self, board: Board):
+    def render_board(self, board: board.Board):
         size = 20, 55
         buf = [
             [stylize(" ", bg(BoardRenderer.WATER_COLOR)) for j in range(size[1])]
@@ -167,7 +165,6 @@ class BoardRenderer:
         ]
 
         center = int(size[1] / 2) - 3, int(size[0] / 2) - 1
-        print(center)
 
         for hex_coords in board.hexes:
             x, y = self.get_hex_center_coords(hex_coords)
@@ -190,16 +187,3 @@ class BoardRenderer:
 
         for row in buf:
             print("".join(row))
-
-
-if __name__ == "__main__":
-    g = Game(BeginnerBoard())
-    g.build_settlement(
-        g.players[0], Coords(1, 0), ensure_connected=False, cost_resources=False
-    )
-    g.build_road(g.players[0], {Coords(1, 0), Coords(2, 0)}, cost_resources=False)
-    g.build_settlement(
-        g.players[1], Coords(-3, 1), ensure_connected=False, cost_resources=False
-    )
-    g.build_road(g.players[1], {Coords(-3, 1), Coords(-3, 2)}, cost_resources=False)
-    BoardRenderer().render_board(g.board)

@@ -1,4 +1,5 @@
 from .board import Board
+from .board_renderer import BoardRenderer
 from .beginner_board import BeginnerBoard
 from .building import Building
 from .building_type import BuildingType
