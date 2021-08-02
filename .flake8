@@ -1,3 +1,9 @@
 [flake8]
+exclude=.git,__pycache__,.nox
 max-line-length=160
-per-file-ignores = __init__.py:F401
+# No docstring checks in test
+per-file-ignores =
+    __init__.py:F401
+    test/*:D
+# D105 does not apply to google docstrings, W503 currentlt doesn't work with black
+ignore=D105,D107,W503,

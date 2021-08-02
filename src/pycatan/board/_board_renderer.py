@@ -1,17 +1,17 @@
 from colored import stylize, fg, bg
 
-from . import board
-from .coords import Coords
-from ..player import Player
-from .hex_type import HexType
-from .building_type import BuildingType
-from .hex import Hex
-from ..resource import Resource
+from . import _board as board
+from ._coords import Coords
+from .._player import Player
+from ._hex_type import HexType
+from ._building_type import BuildingType
+from ._hex import Hex
+from .._resource import Resource
 
 
 class BoardRenderer:
-    """A utility class for rendering catan board in the terminal
-    Used when calling print(Board)
+    """Class for rendering a board in the terminal and configuring its appearance.
+
     Args:
         player_color_map (Dict[Player, str], optional):
             A map of which colors to use for which players. Colors are string hex codes (i.e. '#FF0000')
@@ -169,7 +169,8 @@ class BoardRenderer:
         return ((int)(3 * coords.r), -(int)(1.34 * coords.q + 0.67 * coords.r))
 
     def get_board_as_string(self, board: board.Board) -> str:
-        """Get the board as a large, multiline string that includes colors
+        """Get the board as a large, multiline string that includes colors.
+
         Args:
             board (Board): The board to get the string for
 
@@ -206,7 +207,8 @@ class BoardRenderer:
         return "\n".join(["".join(row) for row in buf])
 
     def render_board(self, board: board.Board):
-        """Renders the board into the terminal
+        """Render the board into the terminal.
+
         Args:
             board (Board): The board to render
         """

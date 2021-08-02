@@ -1,11 +1,12 @@
 from typing import Set
 
-from .coords import Coords
-from ..resource import Resource
+from ._coords import Coords
+from .._resource import Resource
 
 
 class Harbor:
-    """A harbor on the catan board
+    """A harbor on the catan board.
+
     Attributes:
         path_coords (Set[Coords]): The coordinates of the path that the harbor is attached to
         resource (Resource): The resource that the player can trade in 2-1

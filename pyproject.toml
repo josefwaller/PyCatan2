@@ -15,6 +15,7 @@ pytest-snapshot = "^0.6.1"
 coverage = {extras = ["toml"], version = "^5.5"}
 pytest-cov = "^2.12.1"
 pytest = "^6.2.4"
+flake8-docstrings = "^1.6.0"
 
 [tool.coverage.paths]
 source = ["src"]

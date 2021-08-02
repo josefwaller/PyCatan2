@@ -1,13 +1,13 @@
-from .board import Board
-from .hex import Hex
-from .coords import Coords
-from .hex_type import HexType
-from .harbor import Harbor
-from ..resource import Resource
+from ._board import Board
+from ._hex import Hex
+from ._coords import Coords
+from ._hex_type import HexType
+from ._harbor import Harbor
+from .._resource import Resource
 
 
 class BeginnerBoard(Board):
-    """The beginner board, as outlined in the Catan rules"""
+    """The beginner board, as outlined in the Catan rules."""
 
     def __init__(self):
         super().__init__(

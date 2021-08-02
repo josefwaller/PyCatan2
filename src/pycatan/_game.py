@@ -1,17 +1,16 @@
 from typing import Dict, Set
 from random import shuffle
 
-from .player import Player
-from .board.coords import Coords
-from .roll_yield import RollYield
+from ._player import Player
+from .board._coords import Coords
+from ._roll_yield import RollYield
 from .errors import NotEnoughResourcesError
-from .board.building_type import BuildingType
-from .development_card import DevelopmentCard
+from .board._building_type import BuildingType
+from ._development_card import DevelopmentCard
 
 
 class Game:
-    """A game of Catan. Holds all the game state and game logic
-    for interacting with the board, players and decks
+    """A game of Catan. Holds all the game state and game logic for interacting with the board, players and decks.
 
     Args:
             board (Board): The board to use in the Catan game
@@ -22,6 +21,7 @@ class Game:
             players (List[Player]): The players in the game, ordered by (recommended) turn order
             longest_road_owner (Player): The player who has the longest road token, or None if no players
                 have a road of at least 3 length
+            largest_army_owner (Player): The player how has the largest army, or None if no players have played at least 3 knight cards
             development_card_deck (List[DevelopmentCard]): The deck of development cards
     """
 
@@ -47,7 +47,8 @@ class Game:
         cost_resources: bool = True,
         ensure_connected: bool = True,
     ) -> None:
-        """Builds a settlement by the player given in the coords given, or raises an error
+        """Build a settlement by the player given in the coords given, or raises an error if the input is invalid.
+
         Args:
             player (Player): The player who is building the settlement
             coords (Coords): The coordinates to build the settlement at
@@ -81,7 +82,8 @@ class Game:
         cost_resources: bool = True,
         ensure_connected: bool = True,
     ):
-        """Builds a road in the catan game
+        """Build a road in the catan game.
+
         Args:
             player (Player): The player who is building the road
             path_coords (Set[Coords]): The coordinates of the path to build a road on.
@@ -95,7 +97,6 @@ class Game:
             ValueError: If path_coords is not a set of two valid intersection coordinates
             CoordsBlockedError: If the position is already blocked by another road/other path building
         """
-
         # Check the player has the resources
         if cost_resources and not player.has_resources(
             BuildingType.ROAD.get_required_resources()
@@ -125,7 +126,8 @@ class Game:
     def upgrade_settlement_to_city(
         self, player: Player, coords: Coords, cost_resources: bool = True
     ) -> None:
-        """Builds a city from a settlement in the Catan game
+        """Build a city from a settlement in the Catan game.
+
         Args:
             player (Player): The player who is building the city
             coords (Coords): Where to build the city
@@ -135,7 +137,6 @@ class Game:
             ValueError: If coords is not a valid intersection
             RequiresSettlementError: If there is not a valid settlement at the intersection to upgrade
         """
-
         if cost_resources and not player.has_resources(
             BuildingType.CITY.get_required_resources()
         ):
@@ -151,9 +152,7 @@ class Game:
             player.remove_resources(BuildingType.CITY.get_required_resources())
 
     def add_yield_for_roll(self, roll) -> None:
-        """Compute what resources players would receive if `roll` was rolled, and
-        then add those resources to the player's hands.
-        Equivalent to Game.add_yield(Game.board.get_yield_for_roll(roll))
+        """Add the resources to the player's hands for the dice roll given.
 
         Args:
             roll: The number that was rolled
@@ -161,7 +160,7 @@ class Game:
         self.add_yield(self.board.get_yield_for_roll(roll))
 
     def add_yield(self, roll_yield: Dict[Player, RollYield]) -> None:
-        """Add the yield provided to all the player's hands
+        """Add the yield provided to the player's hands.
 
         Args:
             roll_yield: The yield provided by Board.get_yield_for_roll. A dictionary of RollYields mapped by
@@ -171,7 +170,7 @@ class Game:
             p.add_resources(y.total_yield)
 
     def move_robber(self, coords: Coords):
-        """Moves the robber to the coords specified
+        """Move the robber to the coords specified.
 
         Args:
             coords (Coords): The coordinates of the hex to move the robber to
@@ -184,7 +183,8 @@ class Game:
         self.board.robber = coords
 
     def build_development_card(self, player) -> DevelopmentCard:
-        """Build a development card
+        """Build a development card and place it in the player's hand.
+
         Args:
             player (Player): The player building the development card
         Raises:
@@ -203,6 +203,16 @@ class Game:
         return card
 
     def play_development_card(self, player: Player, card: DevelopmentCard):
+        """Play a development card.
+
+        Also keep track of how many knight cards each player has played and may change who has the largest army
+
+        Args:
+            player (Player): The player playing a development card
+            card (DevelopmentCard): The development card thay are playing
+        Raises:
+            ValueError: If the player does not have the card
+        """
         player.play_development_card(card)
         if card is DevelopmentCard.KNIGHT:
             player.number_played_knights += 1
@@ -214,6 +224,13 @@ class Game:
                 self.largest_army_owner = player
 
     def get_victory_points(self, player):
+        """Get the number of victory points the player has.
+
+        Args:
+            player (Player): The player to get the victory points for
+        Returns:
+            int: The number of victory points
+        """
         victory_points = sum(
             list(
                 map(

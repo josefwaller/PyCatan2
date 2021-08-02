@@ -1,11 +1,11 @@
 from typing import Set
 
-from .coords import Coords
-from .hex_type import HexType
+from ._coords import Coords
+from ._hex_type import HexType
 
 
 class Hex:
-    """A hex on a Catan board
+    """A hex on a Catan board.
 
     Args:
         coords (Coords): The coordinates of this hex

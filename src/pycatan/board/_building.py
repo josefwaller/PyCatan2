@@ -1,11 +1,11 @@
 from typing import Set
-from ..player import Player
-from .building_type import BuildingType
-from .coords import Coords
+from .._player import Player
+from ._building_type import BuildingType
+from ._coords import Coords
 
 
 class Building:
-    """A building on the Catan board
+    """A building on the Catan board.
 
     Attributes:
             owner (Player): The player who owns this building
@@ -22,8 +22,7 @@ class Building:
 
 
 class IntersectionBuilding(Building):
-    """A building that is built on a intersection.
-    I.e. a settlement or a city
+    """A building that is built on a intersection. In the base game, a settlement or a city.
 
     Attributes:
             owner (Player): The player who owns this building
@@ -42,8 +41,7 @@ class IntersectionBuilding(Building):
 
 
 class PathBuilding(Building):
-    """A building that is built on an path
-    I.e. a road
+    """A building that is built on an path. In the base game, only roads.
 
     Attributes:
             owner (Player): The player who owns this building

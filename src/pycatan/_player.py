@@ -1,12 +1,12 @@
 from typing import Dict, List
 
-from .resource import Resource
+from ._resource import Resource
 from .errors import NotEnoughResourcesError
-from .development_card import DevelopmentCard
+from ._development_card import DevelopmentCard
 
 
 class Player:
-    """A Player in a Catan game
+    """A Player in a Catan game.
 
     Attributes:
             resources (Dict[Resource, int]): How many of each resource this player has
@@ -21,13 +21,13 @@ class Player:
         self.number_played_knights = 0
 
     def has_resources(self, resources: Dict[Resource, int]) -> bool:
-        """Check if the player has the resources given
+        """Check if the player has the resources given.
 
         Args:
-                resources (Dict[Resource, int]): The resources to check that the player has
+            resources (Dict[Resource, int]): The resources to check that the player has
 
         Returns:
-                bool: True if the player has the resources, false otherwise
+            bool: True if the player has the resources, false otherwise
         """
         for res, num in resources.items():
             if self.resources[res] < num:
@@ -35,13 +35,13 @@ class Player:
         return True
 
     def remove_resources(self, resources: Dict[Resource, int]) -> None:
-        """Remove the given resources from the player's hand
+        """Remove the given resources from the player's hand.
 
         Args:
-                resources (Dict[Resource, int]): The resources to remove
+            resources (Dict[Resource, int]): The resources to remove
 
         Raises:
-                NotEnoughResourcesError: If the player does not have the resources
+            NotEnoughResourcesError: If the player does not have the resources
         """
         if not self.has_resources(resources):
             raise NotEnoughResourcesError(
@@ -52,16 +52,17 @@ class Player:
             self.resources[res] -= num
 
     def add_resources(self, resources: Dict[Resource, int]) -> None:
-        """Add some resources to this player's hand
+        """Add some resources to this player's hand.
 
         Args:
-                resources (Dict[Resource, int]): The resources to add
+            resources (Dict[Resource, int]): The resources to add
         """
         for res, num in resources.items():
             self.resources[res] += num
 
     def get_possible_trades(self) -> List[Dict[Resource, int]]:
-        """Get a list of the possible trades for this player
+        """Get a list of the possible trades for this player.
+
         Returns: A set of the possible trades for this player, where negative numbers mean the player would
             give away those resources and positive numbers mean the player would receive those resources
         """
@@ -96,6 +97,15 @@ class Player:
         return [dict(t) for t in {tuple(d.items()) for d in trades}]
 
     def play_development_card(self, card: DevelopmentCard):
+        """Mark a development card as played.
+
+        i.e. remove it from the player's hand
+
+        Args:
+            card (DevelopmentCard): The card to play
+        Raises:
+            ValueError: If the player does not have the card
+        """
         if self.development_cards[card] < 1:
             raise ValueError(
                 "Cannot play a development card that the player doesn't have!"

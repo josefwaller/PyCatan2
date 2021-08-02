@@ -1,10 +1,10 @@
-from .resource import Resource
-from .board.building import IntersectionBuilding
-from .board.hex import Hex
+from ._resource import Resource
+from .board._building import IntersectionBuilding
+from .board._hex import Hex
 
 
 class RollYieldSource:
-    """The source of some resources a player got after rolling the dice
+    """The source of some resources a player got after rolling the dice.
 
     Attributes:
             resouce: The resouce earned,
@@ -21,8 +21,9 @@ class RollYieldSource:
 
 
 class RollYield:
-    """A utility class to represent what each player gets from a roll of the dice
-    Contains information about where the resources came from as well
+    """A utility class to represent what each player gets from a roll of the dice.
+
+    Contains information about where the resources came from as well.
 
     Attributes:
             total_yield (Dict[Resource, int]): The total yield from this dice roll
@@ -36,5 +37,13 @@ class RollYield:
     def add_yield(
         self, resource: Resource, amount: int, source: RollYieldSource
     ) -> None:
+        """Add a yield to the RollYield.
+
+        Also updates total_yield. Use this method instead of directly changing all_yields.
+
+        Args:
+            resource (Resource): The resource the player has received
+            amount (int): The amount of the resource the player has received
+        """
         self.total_yield[resource] += amount
         self.all_yields.add(RollYieldSource)

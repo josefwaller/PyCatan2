@@ -1,9 +1,11 @@
 from enum import Enum
 
-from ..resource import Resource
+from .._resource import Resource
 
 
 class HexType(Enum):
+    """The different types of hexes in the game."""
+
     FOREST = 0
     HILLS = 1
     PASTURE = 2
@@ -12,6 +14,12 @@ class HexType(Enum):
     DESERT = 5
 
     def get_resource(self) -> Resource:
+        """Get the resource the player receives when a hex of this type is activated.
+
+        Returns:
+            Resource: The resource the player would get
+            None: If the player would not get a resource (i.e. a desert hex)
+        """
         if self == HexType.FOREST:
             return Resource.LUMBER
         elif self == HexType.HILLS:
