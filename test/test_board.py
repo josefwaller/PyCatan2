@@ -41,9 +41,9 @@ def generate_board_from_hex_coords(coords: Set[Coords]):
     return Board(hexes, harbors={}, robber=list(coords)[0])
 
 
-def test_board_generates_corners_one_hex():
+def test_board_generates_intersections_one_hex():
     board = generate_board_from_hex_coords(ONE_HEX_COORDS)
-    expected_corners = {
+    expected_intersections = {
         Coords(1, 0),
         Coords(0, 1),
         Coords(-1, 1),
@@ -51,28 +51,28 @@ def test_board_generates_corners_one_hex():
         Coords(0, -1),
         Coords(1, -1),
     }
-    assert set(board.corners.keys()) == expected_corners
+    assert set(board.intersections.keys()) == expected_intersections
 
 
-def test_board_generates_corners_many_hexes():
+def test_board_generates_intersections_many_hexes():
     board = generate_board_from_hex_coords(SMALL_BOARD_COORDS)
-    expected_corners = set()
+    expected_intersections = set()
     for hex_coords in SMALL_BOARD_COORDS:
         for offset in Hex.CONNECTED_CORNER_OFFSETS:
-            expected_corners.add(hex_coords + offset)
+            expected_intersections.add(hex_coords + offset)
 
-    assert set(board.corners.keys()) == expected_corners
+    assert set(board.intersections.keys()) == expected_intersections
 
 
-def test_board_propery_keys_corners():
+def test_board_propery_keys_intersections():
     board = generate_board_from_hex_coords(SMALL_BOARD_COORDS)
-    for key, corner in board.corners.items():
-        assert key == corner.coords
+    for key, intersection in board.intersections.items():
+        assert key == intersection.coords
 
 
-def test_board_generates_edges_one_hex():
+def test_board_generates_paths_one_hex():
     board = generate_board_from_hex_coords(ONE_HEX_COORDS)
-    expected_edges = set(
+    expected_paths = set(
         (
             frozenset((Coords(1, 0), Coords(0, 1))),
             frozenset((Coords(0, 1), Coords(-1, 1))),
@@ -82,12 +82,12 @@ def test_board_generates_edges_one_hex():
             frozenset((Coords(1, -1), Coords(1, 0))),
         )
     )
-    assert set(board.edges.keys()) == expected_edges
+    assert set(board.paths.keys()) == expected_paths
 
 
-def test_board_generates_edges_many_hexes():
+def test_board_generates_paths_many_hexes():
     board = generate_board_from_hex_coords(SMALL_BOARD_COORDS)
-    expected_edges_offsets = set(
+    expected_paths_offsets = set(
         (
             frozenset((Coords(1, 0), Coords(0, 1))),
             frozenset((Coords(0, 1), Coords(-1, 1))),
@@ -97,82 +97,89 @@ def test_board_generates_edges_many_hexes():
             frozenset((Coords(1, -1), Coords(1, 0))),
         )
     )
-    expected_edges = set()
-    for offset in expected_edges_offsets:
+    expected_paths = set()
+    for offset in expected_paths_offsets:
         for h in SMALL_BOARD_COORDS:
-            expected_edges.add(frozenset([h + o for o in offset]))
+            expected_paths.add(frozenset([h + o for o in offset]))
 
-    assert set(board.edges.keys()) == expected_edges
+    assert set(board.paths.keys()) == expected_paths
 
 
-def test_board_properly_keys_edges():
+def test_board_properly_keys_paths():
     board = generate_board_from_hex_coords(SMALL_BOARD_COORDS)
-    for key, edge in board.edges.items():
-        assert edge.edge_coords == set(key)
+    for key, path in board.paths.items():
+        assert path.path_coords == set(key)
 
 
 def test_cannot_build_in_middle_of_hex():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(InvalidCoordsError):
-        board.add_corner_building(player, Coords(0, 0), BuildingType.SETTLEMENT)
+        board.add_intersection_building(player, Coords(0, 0), BuildingType.SETTLEMENT)
 
 
 def test_cannot_build_on_top_of_settlement():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(CoordsBlockedError):
-        board.add_corner_building(
+        board.add_intersection_building(
             player, Coords(1, -1), BuildingType.SETTLEMENT, ensure_connected=False
         )
-        board.add_corner_building(player, Coords(1, -1), BuildingType.SETTLEMENT)
+        board.add_intersection_building(player, Coords(1, -1), BuildingType.SETTLEMENT)
 
 
 def test_cannot_build_too_close_to_settlement():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(TooCloseToBuildingError):
-        board.add_corner_building(
+        board.add_intersection_building(
             player, Coords(-2, 2), BuildingType.SETTLEMENT, ensure_connected=False
         )
-        board.add_corner_building(player, Coords(-3, 2), BuildingType.SETTLEMENT)
+        board.add_intersection_building(player, Coords(-3, 2), BuildingType.SETTLEMENT)
 
 
 def test_cannot_add_isloated_settlement():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(NotConnectedError):
-        board.add_corner_building(player, Coords(1, 0), BuildingType.SETTLEMENT)
+        board.add_intersection_building(player, Coords(1, 0), BuildingType.SETTLEMENT)
 
 
 def test_can_add_settlement():
     board = BeginnerBoard()
     player = Player()
-    board.add_corner_building(
+    board.add_intersection_building(
         player, Coords(1, 0), BuildingType.SETTLEMENT, ensure_connected=False
     )
-    assert board.corners[Coords(1, 0)].building is not None
-    assert board.corners[Coords(1, 0)].building.building_type == BuildingType.SETTLEMENT
+    assert board.intersections[Coords(1, 0)].building is not None
+    assert (
+        board.intersections[Coords(1, 0)].building.building_type
+        == BuildingType.SETTLEMENT
+    )
 
 
-def test_get_connected_corners():
+def test_get_connected_intersections():
     board = BeginnerBoard()
-    assert board.get_corner_connected_corners(board.corners[Coords(1, -1)]) == {
-        board.corners[Coords(2, -2)],
-        board.corners[Coords(0, -1)],
-        board.corners[Coords(1, 0)],
+    assert board.get_intersection_connected_intersections(
+        board.intersections[Coords(1, -1)]
+    ) == {
+        board.intersections[Coords(2, -2)],
+        board.intersections[Coords(0, -1)],
+        board.intersections[Coords(1, 0)],
     }
-    assert board.get_corner_connected_corners(board.corners[Coords(-3, 2)]) == {
-        board.corners[Coords(-2, 2)],
-        board.corners[Coords(-3, 1)],
-        board.corners[Coords(-4, 3)],
+    assert board.get_intersection_connected_intersections(
+        board.intersections[Coords(-3, 2)]
+    ) == {
+        board.intersections[Coords(-2, 2)],
+        board.intersections[Coords(-3, 1)],
+        board.intersections[Coords(-4, 3)],
     }
 
 
 def test_board_get_yield():
     board = BeginnerBoard()
     player = Player()
-    board.add_corner_building(
+    board.add_intersection_building(
         player,
         coords=Coords(2, 0),
         building_type=BuildingType.SETTLEMENT,
@@ -193,7 +200,7 @@ def test_board_get_yield_multiple_hexes():
         }
     )
     player = Player()
-    board.add_corner_building(
+    board.add_intersection_building(
         player,
         coords=Coords(0, 1),
         building_type=BuildingType.SETTLEMENT,
@@ -208,20 +215,20 @@ def test_cannot_add_isolated_road():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(NotConnectedError):
-        board.add_edge_building(
+        board.add_path_building(
             player=player,
-            edge_coords={Coords(1, 0), Coords(1, -1)},
+            path_coords={Coords(1, 0), Coords(1, -1)},
             building_type=BuildingType.ROAD,
         )
 
 
-def test_cannot_add_road_between_unconnected_corners():
+def test_cannot_add_road_between_unconnected_intersections():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(ValueError):
-        board.add_edge_building(
+        board.add_path_building(
             player=player,
-            edge_coords={Coords(0, -1), Coords(0, 1)},
+            path_coords={Coords(0, -1), Coords(0, 1)},
             building_type=BuildingType.ROAD,
         )
 
@@ -230,9 +237,9 @@ def test_cannot_add_road_to_middle_of_hex():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(ValueError):
-        board.add_edge_building(
+        board.add_path_building(
             player=player,
-            edge_coords={Coords(0, -2), Coords(0, 0)},
+            path_coords={Coords(0, -2), Coords(0, 0)},
             building_type=BuildingType.ROAD,
         )
 
@@ -240,16 +247,16 @@ def test_cannot_add_road_to_middle_of_hex():
 def test_cannot_add_road_on_top_of_other():
     board = BeginnerBoard()
     player = Player()
-    edge_coords = {Coords(1, 0), Coords(0, 1)}
-    board.add_edge_building(
+    path_coords = {Coords(1, 0), Coords(0, 1)}
+    board.add_path_building(
         player=player,
-        edge_coords=edge_coords,
+        path_coords=path_coords,
         building_type=BuildingType.ROAD,
         ensure_connected=False,
     )
     with pytest.raises(CoordsBlockedError):
-        board.add_edge_building(
-            player=player, edge_coords=edge_coords, building_type=BuildingType.ROAD
+        board.add_path_building(
+            player=player, path_coords=path_coords, building_type=BuildingType.ROAD
         )
 
 
@@ -257,35 +264,41 @@ def test_cannot_add_city_invalid_coords():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(InvalidCoordsError):
-        board.add_corner_building(player, Coords(0, 0), building_type=BuildingType.CITY)
+        board.add_intersection_building(
+            player, Coords(0, 0), building_type=BuildingType.CITY
+        )
 
 
 def test_cannot_add_city_without_settlement():
     board = BeginnerBoard()
     player = Player()
     with pytest.raises(RequiresSettlementError):
-        board.add_corner_building(player, Coords(1, 0), building_type=BuildingType.CITY)
+        board.add_intersection_building(
+            player, Coords(1, 0), building_type=BuildingType.CITY
+        )
 
 
 def test_cannot_add_city_on_top_of_other_player_settlement():
     board = BeginnerBoard()
     pOne = Player()
     pTwo = Player()
-    board.add_corner_building(
+    board.add_intersection_building(
         pOne,
         Coords(1, 0),
         building_type=BuildingType.SETTLEMENT,
         ensure_connected=False,
     )
     with pytest.raises(RequiresSettlementError):
-        board.add_corner_building(pTwo, Coords(1, 0), building_type=BuildingType.CITY)
+        board.add_intersection_building(
+            pTwo, Coords(1, 0), building_type=BuildingType.CITY
+        )
 
 
 def test_can_add_city():
     b = BeginnerBoard()
     p = Player()
     add_free_city(b, p, Coords(0, -1))
-    assert b.corners[Coords(0, -1)].building.building_type == BuildingType.CITY
+    assert b.intersections[Coords(0, -1)].building.building_type == BuildingType.CITY
 
 
 def test_city_adds_twice_yield_for_city():
@@ -344,8 +357,8 @@ def test_is_valid_hex_coords():
 
 def test_board_properly_keys_harbors():
     b = BeginnerBoard()
-    for edge_coords, harbor in b.harbors.items():
-        assert harbor.edge_coords == edge_coords
+    for path_coords, harbor in b.harbors.items():
+        assert harbor.path_coords == path_coords
 
 
 def test_board_adds_harbors_to_players():
@@ -366,12 +379,12 @@ def test_get_longest_road():
     b = BeginnerBoard()
     p = Player()
     assert b.calculate_player_longest_road(p) == 0
-    add_free_road(b, p, edge_coords={Coords(1, 0), Coords(0, 1)})
+    add_free_road(b, p, path_coords={Coords(1, 0), Coords(0, 1)})
     assert b.calculate_player_longest_road(p) == 1
-    add_free_road(b, p, edge_coords={Coords(0, 2), Coords(0, 1)})
-    add_free_road(b, p, edge_coords={Coords(0, 2), Coords(-1, 3)})
-    add_free_road(b, p, edge_coords={Coords(0, 2), Coords(1, 2)})
-    add_free_road(b, p, edge_coords={Coords(1, 2), Coords(2, 1)})
+    add_free_road(b, p, path_coords={Coords(0, 2), Coords(0, 1)})
+    add_free_road(b, p, path_coords={Coords(0, 2), Coords(-1, 3)})
+    add_free_road(b, p, path_coords={Coords(0, 2), Coords(1, 2)})
+    add_free_road(b, p, path_coords={Coords(1, 2), Coords(2, 1)})
     assert b.calculate_player_longest_road(p) == 4
 
 
@@ -453,8 +466,8 @@ def test_allow_building_road_only_connected_to_settlement():
     b = BeginnerBoard()
     p = Player()
     add_free_settlement(b, p, Coords(1, 0))
-    b.add_edge_building(p, BuildingType.ROAD, edge_coords={Coords(1, 0), Coords(0, 1)})
-    assert b.edges[frozenset({Coords(1, 0), Coords(0, 1)})].building.owner == p
+    b.add_path_building(p, BuildingType.ROAD, path_coords={Coords(1, 0), Coords(0, 1)})
+    assert b.paths[frozenset({Coords(1, 0), Coords(0, 1)})].building.owner == p
 
 
 def test_can_break_longest_road_with_settlement():
@@ -475,8 +488,8 @@ def test_cannot_build_road_through_enemy_settlement():
     add_free_road(b, p1, {Coords(1, 0), Coords(0, 1)})
     add_free_settlement(b, p2, Coords(0, 1))
     with pytest.raises(NotConnectedError):
-        b.add_edge_building(
+        b.add_path_building(
             p1,
             building_type=BuildingType.ROAD,
-            edge_coords={Coords(0, 1), Coords(0, 2)},
+            path_coords={Coords(0, 1), Coords(0, 2)},
         )

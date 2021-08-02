@@ -1,5 +1,5 @@
 from .resource import Resource
-from .building import CornerBuilding
+from .building import IntersectionBuilding
 from .hex import Hex
 
 
@@ -14,7 +14,7 @@ class RollYieldSource:
     """
 
     def __init__(
-        self, resource: Resource, amount: int, building: CornerBuilding, hex: Hex
+        self, resource: Resource, amount: int, building: IntersectionBuilding, hex: Hex
     ):
         self.building = building
         self.hex = hex

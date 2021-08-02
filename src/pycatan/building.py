@@ -21,8 +21,8 @@ class Building:
         self.building_type = building_type
 
 
-class CornerBuilding(Building):
-    """A building that is built on a corner.
+class IntersectionBuilding(Building):
+    """A building that is built on a intersection.
     I.e. a settlement or a city
 
     Attributes:
@@ -41,23 +41,23 @@ class CornerBuilding(Building):
         self.coords = coords
 
 
-class EdgeBuilding(Building):
-    """A building that is built on an edge
+class PathBuilding(Building):
+    """A building that is built on an path
     I.e. a road
 
     Attributes:
             owner (Player): The player who owns this building
             building_type (BuildingType): The type of building this is
-            edge_coords (Set[Coords]): The coordinates of the two corners the building is connecting
+            path_coords (Set[Coords]): The coordinates of the two intersections the building is connecting
 
     Args:
             owner (Player): The player who owns this building
             building_type (BuildingType): The type of building this is
-            edge_coords (Set[Coords]): The coordinates of the two corners the building is connecting
+            path_coords (Set[Coords]): The coordinates of the two intersections the building is connecting
     """
 
     def __init__(
-        self, owner: Player, building_type: BuildingType, edge_coords: Set[Coords]
+        self, owner: Player, building_type: BuildingType, path_coords: Set[Coords]
     ):
         super().__init__(owner, building_type)
-        self.edge_coords = edge_coords
+        self.path_coords = path_coords

@@ -67,7 +67,7 @@ class Game:
                 "Player does not have enough resources to build a settlement"
             )
         # Build the settlement
-        self.board.add_corner_building(
+        self.board.add_intersection_building(
             player, coords, BuildingType.SETTLEMENT, ensure_connected=ensure_connected
         )
         # Remove the resources
@@ -77,23 +77,23 @@ class Game:
     def build_road(
         self,
         player: Player,
-        edge_coords: Set[Coords],
+        path_coords: Set[Coords],
         cost_resources: bool = True,
         ensure_connected: bool = True,
     ):
         """Builds a road in the catan game
         Args:
             player (Player): The player who is building the road
-            edge_coords (Set[Coords]): The coordinates of the edge to build a road on.
-                Should be two valid connected corner coordinates (i.e. {(1, 0), (1, -1)})
+            path_coords (Set[Coords]): The coordinates of the path to build a road on.
+                Should be two valid connected intersection coordinates (i.e. {(1, 0), (1, -1)})
             cost_resources(bool): Whether to remove resources from the player's hand to build the road,
                 and raise an error if they don't have enough
             ensure_connected (bool): Whether to ensure that the road is connected to another road, settlement or city
         Raises:
             NotEnoughResourcesError: If check_resources is True and the player doesn't have the cards to build the road
             NotConnectedError: If check_connection is True and the road is not connected to anything
-            ValueError: If edge_coords is not a set of two valid corner coordinates
-            CoordsBlockedError: If the position is already blocked by another road/other edge building
+            ValueError: If path_coords is not a set of two valid intersection coordinates
+            CoordsBlockedError: If the position is already blocked by another road/other path building
         """
 
         # Check the player has the resources
@@ -103,9 +103,9 @@ class Game:
             raise NotEnoughResourcesError(
                 "Player doesn not have the resources to build a road"
             )
-        self.board.add_edge_building(
+        self.board.add_path_building(
             player=player,
-            edge_coords=edge_coords,
+            path_coords=path_coords,
             building_type=BuildingType.ROAD,
             ensure_connected=ensure_connected,
         )
@@ -132,8 +132,8 @@ class Game:
             cost_resources (bool): Whether to remove the resources from the player's hand
         Raises:
             NotEnoughResourcesError: If cost_resources is true and the player doesn't have enough resources
-            ValueError: If coords is not a valid corner
-            RequiresSettlementError: If there is not a valid settlement at the corner to upgrade
+            ValueError: If coords is not a valid intersection
+            RequiresSettlementError: If there is not a valid settlement at the intersection to upgrade
         """
 
         if cost_resources and not player.has_resources(
@@ -143,7 +143,7 @@ class Game:
                 "Player does not have the resources to build a city"
             )
 
-        self.board.add_corner_building(
+        self.board.add_intersection_building(
             player=player, coords=coords, building_type=BuildingType.CITY
         )
 
@@ -220,7 +220,7 @@ class Game:
                     lambda c: 2 if c.building.building_type is BuildingType.CITY else 1,
                     [
                         c
-                        for c in self.board.corners.values()
+                        for c in self.board.intersections.values()
                         if c.building is not None and c.building.owner is player
                     ],
                 )

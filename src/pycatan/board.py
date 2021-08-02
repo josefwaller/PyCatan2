@@ -4,10 +4,10 @@ from itertools import product
 from .coords import Coords
 from .hex import Hex
 from .hex_type import HexType
-from .corner import Corner
-from .edge import Edge
+from .intersection import Intersection
+from .path import Path
 from .player import Player
-from .building import CornerBuilding, EdgeBuilding
+from .building import IntersectionBuilding, PathBuilding
 from .harbor import Harbor
 from .building_type import BuildingType
 from .resource import Resource
@@ -23,9 +23,9 @@ from .roll_yield import RollYield, RollYieldSource
 
 class Board:
     """An interface for holding the state of Catan boards.
-    Uses a triangular grid to hold the tiles, corners and
-    edges. The Board constructor will automatically
-    generate the corners and edges from a dict of hexes,
+    Uses a triangular grid to hold the tiles, intersections and
+    paths. The Board constructor will automatically
+    generate the intersections and paths from a dict of hexes,
     assuming all the hexes tile correctly
 
     Args:
@@ -40,18 +40,18 @@ class Board:
     Attributes:
                     hexes (Dict[Coord, Hex]):
                         The hexes on this catan board, keyed by their coordinates
-                    corners: (Dict[Coords, Corner]):
-                        The corners on the board, keyed by their coordinates
-                    edges (Dict[frozenset[Coords], Edge]):
-                        The edges on the board, keyed by the coordinates of the two corners they connect
+                    intersections: (Dict[Coords, Intersection]):
+                        The intersections on the board, keyed by their coordinates
+                    paths (Dict[frozenset[Coords], Path]):
+                        The paths on the board, keyed by the coordinates of the two intersections they connect
                     harbors (Dict[frozenset[Coords], Harbor]):
-                        The harbors on the board, keyed by the coords of the edge they are attached to
+                        The harbors on the board, keyed by the coords of the path they are attached to
                     robber (Set[Coords]): The location of the robber
     """
 
     def __init__(self, hexes: Set[Hex], harbors=set(), robber: Coords = None):
         self.hexes: Dict[Coords, Hex] = dict(zip((h.coords for h in hexes), hexes))
-        self.harbors = {frozenset(h.edge_coords): h for h in harbors}
+        self.harbors = {frozenset(h.path_coords): h for h in harbors}
         # Position the robber on the desert
         if robber:
             self.robber = robber
@@ -60,90 +60,92 @@ class Board:
                 h.coords for h in self.hexes.values() if h.hex_type == HexType.DESERT
             ][0]
         # Gather the points around each hex into a set
-        corner_coords = set(
+        intersection_coords = set(
             map(
                 lambda x: x[0] + x[1],
                 list(product(*[self.hexes.keys(), Hex.CONNECTED_CORNER_OFFSETS])),
             )
         )
-        # Add the corners to self.corners
-        self.corners = {}
-        for coords in corner_coords:
-            self.corners[coords] = Corner(coords)
-        # Now add all the edgges inbetween the corners we just added
-        self.edges = {}
-        for c in self.corners:
-            for offset in Corner.CONNECTED_CORNER_OFFSETS:
+        # Add the intersections to self.intersections
+        self.intersections = {}
+        for coords in intersection_coords:
+            self.intersections[coords] = Intersection(coords)
+        # Now add all the edgges inbetween the intersections we just added
+        self.paths = {}
+        for c in self.intersections:
+            for offset in Intersection.CONNECTED_CORNER_OFFSETS:
                 coord = c + offset
-                if coord in self.corners:
-                    self.edges[frozenset([c, c + offset])] = Edge(set([c, c + offset]))
+                if coord in self.intersections:
+                    self.paths[frozenset([c, c + offset])] = Path(set([c, c + offset]))
 
-    def add_edge_building(
+    def add_path_building(
         self,
         player: Player,
         building_type: BuildingType,
-        edge_coords: Set[Coords],
+        path_coords: Set[Coords],
         ensure_connected: bool = True,
     ):
-        """Adds an edge building to the board
+        """Adds an path building to the board
         Args:
             player (Player): The player adding the building
             building_type (BuildingType): The building_type of the building being added
-            edge_coords (Set[Coords]): The coordinates the edge to build the building on (i.e. the coordinates of the two corners the edge connects)
-            ensure_connected (bool, optional): Whetehr to ensure that the edge building is connected to another building. Defaults to True
+            path_coords (Set[Coords]): The coordinates the path to build the building on (i.e. the coordinates of the two intersections the path connects)
+            ensure_connected (bool, optional): Whetehr to ensure that the path building is connected to another building. Defaults to True
         Raises:
-            ValueError: If the edge_coords are not valid
-            CoordsBlockedError: If there is already a building on the edge
+            ValueError: If the path_coords are not valid
+            CoordsBlockedError: If there is already a building on the path
             NotConnectedError: If check_connection is true and the building is not connected to anything
         """
-        for c in edge_coords:
-            if c not in self.corners.keys():
+        for c in path_coords:
+            if c not in self.intersections.keys():
                 raise ValueError(
-                    "Invalid edge: Edges must connect two corners on the board. %s is not a corner"
+                    "Invalid path: Paths must connect two intersections on the board. %s is not a intersection"
                     % c
                 )
 
-        if frozenset(edge_coords) not in self.edges.keys():
-            raise ValueError("Invalid edge: Edge does not exist")
+        if frozenset(path_coords) not in self.paths.keys():
+            raise ValueError("Invalid path: Path does not exist")
 
-        edge: Edge = self.edges[frozenset(edge_coords)]
-        if edge.building is not None:
-            raise CoordsBlockedError("There is already a building on this edge")
+        path: Path = self.paths[frozenset(path_coords)]
+        if path.building is not None:
+            raise CoordsBlockedError("There is already a building on this path")
 
         if ensure_connected:
-            # Check if it's connected to a corner building
+            # Check if it's connected to a intersection building
             valid_buildings = set(
                 filter(
                     lambda b: b is not None and b.owner is player,
-                    map(lambda c: self.corners[c].building, edge_coords),
+                    map(lambda c: self.intersections[c].building, path_coords),
                 )
             )
             if len(valid_buildings) == 0:
-                # Check if it's connected to another edge building
-                edges_connected = set()
-                for coords in edge_coords:
-                    for c in self.get_corner_connected_corners(self.corners[coords]):
-                        connected_edge = self.edges[frozenset({coords, c.coords})]
-                        # Check if there is an edge building (i.e. a road) to be connected to here
+                # Check if it's connected to another path building
+                paths_connected = set()
+                for coords in path_coords:
+                    for c in self.get_intersection_connected_intersections(
+                        self.intersections[coords]
+                    ):
+                        connected_path = self.paths[frozenset({coords, c.coords})]
+                        # Check if there is an path building (i.e. a road) to be connected to here
                         if (
-                            connected_edge.building is not None
-                            and connected_edge.building.owner is player
+                            connected_path.building is not None
+                            and connected_path.building.owner is player
                         ):
                             # Checks that we aren't going through an enemy building to be connected
-                            building = self.corners[coords].building
+                            building = self.intersections[coords].building
                             if building is None or building.owner is player:
-                                edges_connected.add(edge)
+                                paths_connected.add(path)
 
-                if len(edges_connected) == 0:
+                if len(paths_connected) == 0:
                     raise NotConnectedError(
-                        "Edge building is not connected to any other building"
+                        "Path building is not connected to any other building"
                     )
         # Add the building
-        self.edges[frozenset(edge_coords)].building = EdgeBuilding(
-            player, edge_coords=edge_coords, building_type=building_type
+        self.paths[frozenset(path_coords)].building = PathBuilding(
+            player, path_coords=path_coords, building_type=building_type
         )
 
-    def add_corner_building(
+    def add_intersection_building(
         self,
         player: Player,
         coords: Coords,
@@ -159,7 +161,7 @@ class Board:
                             Defaults to True
 
         Raises:
-                        InvalidCoordsError: If `coords` is not a valid corner
+                        InvalidCoordsError: If `coords` is not a valid intersection
                         TooCloseToBuildingError: If the building is too close to another building
                         PositionAlreadyTakenError: If the position is already taken
         """
@@ -169,15 +171,17 @@ class Board:
             self.assert_valid_city_coords(player=player, coords=coords)
         else:
             raise ValueError(
-                "Invalid building type passed to Board.add_corner_building, receieved %s"
+                "Invalid building type passed to Board.add_intersection_building, receieved %s"
                 % building_type
             )
 
-        self.corners[coords].building = CornerBuilding(player, building_type, coords)
+        self.intersections[coords].building = IntersectionBuilding(
+            player, building_type, coords
+        )
 
         # Connect the player to a harbor if they can
         for harbor in self.harbors.values():
-            if coords in harbor.edge_coords and harbor not in player.connected_harbors:
+            if coords in harbor.path_coords and harbor not in player.connected_harbors:
                 player.connected_harbors.add(harbor)
 
     def assert_valid_settlement_coords(
@@ -194,32 +198,35 @@ class Board:
             PositionAlreadyTakenError: If the position is already taken
             NotConnectedError: If `check_connection` is `True` and the settlement is not connected
         """
-        # Check that the coords are referencing a corner
-        if coords not in self.corners.keys():
-            raise InvalidCoordsError("coords must be the coordinates of a corner")
-        # Check that the corner is empty
-        if self.corners[coords].building is not None:
-            raise CoordsBlockedError("There is already a building on this corner")
-        # Check that the surrounding corners are empty
-        connected_corners: Set[Corner] = self.get_corner_connected_corners(
-            self.corners[coords]
-        )
-        if len(set(filter(lambda c: c.building is not None, connected_corners))) > 0:
+        # Check that the coords are referencing a intersection
+        if coords not in self.intersections.keys():
+            raise InvalidCoordsError("coords must be the coordinates of a intersection")
+        # Check that the intersection is empty
+        if self.intersections[coords].building is not None:
+            raise CoordsBlockedError("There is already a building on this intersection")
+        # Check that the surrounding intersections are empty
+        connected_intersections: Set[
+            Intersection
+        ] = self.get_intersection_connected_intersections(self.intersections[coords])
+        if (
+            len(set(filter(lambda c: c.building is not None, connected_intersections)))
+            > 0
+        ):
             raise TooCloseToBuildingError(
-                "There is a building that is not at least 2 edges away from this position"
+                "There is a building that is not at least 2 paths away from this position"
             )
         if ensure_connected:
-            edge_coords = set(
-                map(lambda c: frozenset({coords, c.coords}), connected_corners)
+            path_coords = set(
+                map(lambda c: frozenset({coords, c.coords}), connected_intersections)
             )
-            edges = set(map(lambda e: self.edges[e], edge_coords))
+            paths = set(map(lambda e: self.paths[e], path_coords))
             if (
                 len(
                     set(
                         filter(
-                            lambda edge: edge.building is not None
-                            and edge.building.owner is player,
-                            edges,
+                            lambda path: path.building is not None
+                            and path.building.owner is player,
+                            paths,
                         )
                     )
                 )
@@ -234,37 +241,39 @@ class Board:
             player (Player): The player building the city
             coords (Coords): Where to build the city
         """
-        # Check the coords are a corner
-        if coords not in self.corners.keys():
-            raise InvalidCoordsError("coords must be the coordinates of a corner")
+        # Check the coords are a intersection
+        if coords not in self.intersections.keys():
+            raise InvalidCoordsError("coords must be the coordinates of a intersection")
         # Check that a settlement owned by player exists here
         if (
-            self.corners[coords].building is None
-            or self.corners[coords].building.owner is not player
+            self.intersections[coords].building is None
+            or self.intersections[coords].building.owner is not player
         ):
             raise RequiresSettlementError(
                 "You must update an existing settlement owned by the player into a city"
             )
 
-    def get_corner_connected_corners(self, corner) -> Set[Corner]:
-        """Get the corners connected to the corner given by an edge
+    def get_intersection_connected_intersections(
+        self, intersection
+    ) -> Set[Intersection]:
+        """Get the intersections connected to the intersection given by an path
 
         Args:
-                        corner (Corner): The corner to get the connected corners for
+                        intersection (Intersection): The intersection to get the connected intersections for
 
         Returns:
-                        Set[Corner]: The corners that are connected to the corner given
+                        Set[Intersection]: The intersections that are connected to the intersection given
         """
         connected = set()
-        for c in Corner.CONNECTED_CORNER_OFFSETS:
-            if c + corner.coords in self.corners.keys():
-                connected.add(self.corners[c + corner.coords])
+        for c in Intersection.CONNECTED_CORNER_OFFSETS:
+            if c + intersection.coords in self.intersections.keys():
+                connected.add(self.intersections[c + intersection.coords])
         return connected
 
-    def get_connected_hex_corners(self, hex) -> Set[Corner]:
+    def get_connected_hex_intersections(self, hex) -> Set[Intersection]:
         return set(
             map(
-                lambda offset: self.corners[hex.coords + offset],
+                lambda offset: self.intersections[hex.coords + offset],
                 Hex.CONNECTED_CORNER_OFFSETS,
             )
         )
@@ -275,15 +284,15 @@ class Board:
             if hex.token_number == roll and self.robber != hex.coords:
                 resource = hex.hex_type.get_resource()
                 # Check around the hex for any settlements/cities
-                for corner in self.get_connected_hex_corners(hex):
-                    print(corner.coords)
-                    if corner.building is not None:
-                        owner = corner.building.owner
+                for intersection in self.get_connected_hex_intersections(hex):
+                    print(intersection.coords)
+                    if intersection.building is not None:
+                        owner = intersection.building.owner
                         if owner not in total_yield.keys():
                             total_yield[owner] = RollYield()
                         amount = (
                             2
-                            if corner.building.building_type is BuildingType.CITY
+                            if intersection.building.building_type is BuildingType.CITY
                             else 1
                         )
                         total_yield[owner].add_yield(
@@ -292,7 +301,7 @@ class Board:
                             source=RollYieldSource(
                                 resource,
                                 amount,
-                                corner.building,
+                                intersection.building,
                                 hex,
                             ),
                         )
@@ -308,12 +317,12 @@ class Board:
         Returns:
             int: The length of the ongest road segment
         """
-        edges = [
+        paths = [
             e
-            for e in self.edges.values()
+            for e in self.paths.values()
             if e.building is not None and e.building.owner is player
         ]
-        starting = [(c, [e]) for e in edges for c in e.edge_coords]
+        starting = [(c, [e]) for e in paths for c in e.path_coords]
         if len(starting) == 0:
             return 0
 
@@ -322,30 +331,30 @@ class Board:
         potential = starting
         while len(potential) > 0:
             current = potential.pop(0)
-            building = self.corners[current[0]].building
+            building = self.intersections[current[0]].building
             if building is not None and building.owner is not player:
                 continue
-            for edge in self.get_edges_for_corner_coords(current[0]):
+            for path in self.get_paths_for_intersection_coords(current[0]):
                 if (
-                    edge not in current[1]
-                    and edge.building is not None
-                    and edge.building.owner is player
+                    path not in current[1]
+                    and path.building is not None
+                    and path.building.owner is player
                 ):
-                    other_corner = edge.other_corner(current[0])
-                    potential.append((other_corner, [edge] + current[1]))
+                    other_intersection = path.other_intersection(current[0])
+                    potential.append((other_intersection, [path] + current[1]))
                     if len(current[1]) + 1 > len(current_longest):
-                        current_longest = [edge] + current[1]
+                        current_longest = [path] + current[1]
 
         return len(current_longest)
 
-    def get_edges_for_corner_coords(self, coords: Coords) -> Set[Edge]:
-        """Returns all the edges who are connected to the corner given
+    def get_paths_for_intersection_coords(self, coords: Coords) -> Set[Path]:
+        """Returns all the paths who are connected to the intersection given
         Args:
-            coords: The coordinates of the corner
+            coords: The coordinates of the intersection
         Returns:
-            Set[Edge]: A set of the edges attached to that corner
+            Set[Path]: A set of the paths attached to that intersection
         """
-        return set(filter(lambda e: coords in e.edge_coords, self.edges.values()))
+        return set(filter(lambda e: coords in e.path_coords, self.paths.values()))
 
 
 class BeginnerBoard(Board):
@@ -376,21 +385,21 @@ class BeginnerBoard(Board):
             },
             harbors=[
                 Harbor(
-                    edge_coords={Coords(4, 0), Coords(3, 1)}, resource=Resource.GRAIN
+                    path_coords={Coords(4, 0), Coords(3, 1)}, resource=Resource.GRAIN
                 ),
-                Harbor(edge_coords={Coords(1, 3), Coords(0, 4)}, resource=Resource.ORE),
-                Harbor(edge_coords={Coords(-2, 5), Coords(-3, 5)}, resource=None),
+                Harbor(path_coords={Coords(1, 3), Coords(0, 4)}, resource=Resource.ORE),
+                Harbor(path_coords={Coords(-2, 5), Coords(-3, 5)}, resource=None),
                 Harbor(
-                    edge_coords={Coords(-4, 3), Coords(-4, 4)}, resource=Resource.WOOL
+                    path_coords={Coords(-4, 3), Coords(-4, 4)}, resource=Resource.WOOL
                 ),
-                Harbor(edge_coords={Coords(-4, 0), Coords(-4, 1)}, resource=None),
-                Harbor(edge_coords={Coords(-2, -3), Coords(-3, -2)}, resource=None),
+                Harbor(path_coords={Coords(-4, 0), Coords(-4, 1)}, resource=None),
+                Harbor(path_coords={Coords(-2, -3), Coords(-3, -2)}, resource=None),
                 Harbor(
-                    edge_coords={Coords(2, -5), Coords(3, -5)}, resource=Resource.BRICK
+                    path_coords={Coords(2, -5), Coords(3, -5)}, resource=Resource.BRICK
                 ),
                 Harbor(
-                    edge_coords={Coords(3, -4), Coords(4, -4)}, resource=Resource.LUMBER
+                    path_coords={Coords(3, -4), Coords(4, -4)}, resource=Resource.LUMBER
                 ),
-                Harbor(edge_coords={Coords(5, -3), Coords(5, -2)}, resource=None),
+                Harbor(path_coords={Coords(5, -3), Coords(5, -2)}, resource=None),
             ],
         )

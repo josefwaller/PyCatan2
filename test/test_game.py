@@ -75,10 +75,11 @@ def test_game_build_settlement_free():
         cost_resources=False,
         ensure_connected=False,
     )
-    assert g.board.corners[Coords(-1, 0)].building is not None
-    assert g.board.corners[Coords(-1, 0)].building.owner == g.players[0]
+    assert g.board.intersections[Coords(-1, 0)].building is not None
+    assert g.board.intersections[Coords(-1, 0)].building.owner == g.players[0]
     assert (
-        g.board.corners[Coords(-1, 0)].building.building_type == BuildingType.SETTLEMENT
+        g.board.intersections[Coords(-1, 0)].building.building_type
+        == BuildingType.SETTLEMENT
     )
 
 
@@ -103,17 +104,17 @@ def test_game_build_road_free():
     g = Game(BeginnerBoard())
     g.build_road(
         g.players[0],
-        edge_coords={Coords(1, -1), Coords(1, 0)},
+        path_coords={Coords(1, -1), Coords(1, 0)},
         cost_resources=False,
         ensure_connected=False,
     )
-    assert g.board.edges[frozenset([Coords(1, -1), Coords(1, 0)])].building is not None
+    assert g.board.paths[frozenset([Coords(1, -1), Coords(1, 0)])].building is not None
     assert (
-        g.board.edges[frozenset([Coords(1, -1), Coords(1, 0)])].building.owner
+        g.board.paths[frozenset([Coords(1, -1), Coords(1, 0)])].building.owner
         == g.players[0]
     )
     assert (
-        g.board.edges[frozenset([Coords(1, -1), Coords(1, 0)])].building.building_type
+        g.board.paths[frozenset([Coords(1, -1), Coords(1, 0)])].building.building_type
         == BuildingType.ROAD
     )
 
@@ -123,7 +124,7 @@ def test_game_build_road_no_resources():
     with pytest.raises(NotEnoughResourcesError):
         g.build_road(
             g.players[0],
-            edge_coords={Coords(1, -1), Coords(1, 0)},
+            path_coords={Coords(1, -1), Coords(1, 0)},
             ensure_connected=False,
         )
 
@@ -139,8 +140,8 @@ def test_game_build_some_valid_settlements_and_roads():
     g.players[0].add_resources(
         {Resource.LUMBER: 3, Resource.BRICK: 3, Resource.GRAIN: 1, Resource.WOOL: 1}
     )
-    g.build_road(player=g.players[0], edge_coords={Coords(1, 0), Coords(1, -1)})
-    g.build_road(player=g.players[0], edge_coords={Coords(1, -1), Coords(0, -1)})
+    g.build_road(player=g.players[0], path_coords={Coords(1, 0), Coords(1, -1)})
+    g.build_road(player=g.players[0], path_coords={Coords(1, -1), Coords(0, -1)})
     g.build_settlement(player=g.players[0], coords=Coords(0, -1))
 
 
@@ -150,7 +151,9 @@ def test_upgrade_city_free():
         g.players[0], Coords(1, 0), cost_resources=False, ensure_connected=False
     )
     g.upgrade_settlement_to_city(g.players[0], Coords(1, 0), cost_resources=False)
-    assert g.board.corners[Coords(1, 0)].building.building_type == BuildingType.CITY
+    assert (
+        g.board.intersections[Coords(1, 0)].building.building_type == BuildingType.CITY
+    )
 
 
 def test_update_city_not_enough_resources():
@@ -171,7 +174,9 @@ def test_update_city_costs_resources():
         {Resource.LUMBER: 2, Resource.BRICK: 2, Resource.ORE: 3, Resource.GRAIN: 3}
     )
     g.upgrade_settlement_to_city(g.players[0], Coords(1, 0))
-    assert g.board.corners[Coords(1, 0)].building.building_type == BuildingType.CITY
+    assert (
+        g.board.intersections[Coords(1, 0)].building.building_type == BuildingType.CITY
+    )
     assert g.players[0].resources == get_resource_hand(lumber=2, brick=2, grain=1)
 
 
@@ -181,7 +186,7 @@ def test_move_robber_valid():
     assert g.board.robber == Coords(2, -1)
 
 
-def test_move_robber_invalid_edge():
+def test_move_robber_invalid_path():
     g = Game(BeginnerBoard())
     with pytest.raises(ValueError):
         g.move_robber(Coords(1, 0))
@@ -199,12 +204,12 @@ def test_can_get_longest_road():
     g.players[0].add_resources(get_resource_hand(lumber=3, brick=3))
     coords = (Coords(1, 0), Coords(0, 1), Coords(0, 2), Coords(-1, 3))
     g.build_road(
-        g.players[0], edge_coords={coords[0], coords[1]}, ensure_connected=False
+        g.players[0], path_coords={coords[0], coords[1]}, ensure_connected=False
     )
     assert g.longest_road_owner is None
-    g.build_road(g.players[0], edge_coords={coords[1], coords[2]})
+    g.build_road(g.players[0], path_coords={coords[1], coords[2]})
     assert g.longest_road_owner is None
-    g.build_road(g.players[0], edge_coords={coords[2], coords[3]})
+    g.build_road(g.players[0], path_coords={coords[2], coords[3]})
     assert g.longest_road_owner is g.players[0]
 
 

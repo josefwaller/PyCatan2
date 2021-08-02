@@ -1,7 +1,7 @@
-from pycatan.corner import Corner
+from pycatan.intersection import Intersection
 from pycatan.coords import Coords
 
 
-def test_corner_holds_coords():
-    c = Corner(Coords(3, 4))
+def test_intersection_holds_coords():
+    c = Intersection(Coords(3, 4))
     assert c.coords == Coords(3, 4)
