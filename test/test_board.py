@@ -489,3 +489,12 @@ def test_cannot_build_road_through_enemy_settlement():
             building_type=BuildingType.ROAD,
             path_coords={Coords(0, 1), Coords(0, 2)},
         )
+
+
+def test_board_into_string(snapshot):
+    snapshot.assert_match(str(BeginnerBoard()), "beginner_board.txt")
+
+
+def test_board_prints_nicely(snapshot, capsys):
+    print(BeginnerBoard())
+    snapshot.assert_match(capsys.readouterr().out, "beginner_board.txt")

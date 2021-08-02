@@ -157,7 +157,7 @@ class BoardRenderer:
     def get_hex_center_coords(self, coords):
         return ((int)(3 * coords.r), -(int)(1.34 * coords.q + 0.67 * coords.r))
 
-    def render_board(self, board: board.Board):
+    def get_board_as_string(self, board: board.Board):
         size = 20, 55
         buf = [
             [stylize(" ", bg(BoardRenderer.WATER_COLOR)) for j in range(size[1])]
@@ -185,5 +185,8 @@ class BoardRenderer:
             center[1] + y + 1,
         )
 
-        for row in buf:
-            print("".join(row))
+        return "\n".join(["".join(row) for row in buf])
+
+    def render_board(self, board: board.Board):
+        buf = self.get_board_as_string(board)
+        print(buf)

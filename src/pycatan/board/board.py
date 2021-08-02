@@ -1,6 +1,7 @@
 from typing import Dict, Set
 from itertools import product
 
+from .. import board
 from .coords import Coords
 from .hex import Hex
 from .hex_type import HexType
@@ -365,3 +366,9 @@ class Board:
             Set[Path]: A set of the paths attached to that intersection
         """
         return set(filter(lambda e: coords in e.path_coords, self.paths.values()))
+
+    def __str__(self):
+        return board.BoardRenderer().get_board_as_string(self)
+
+    def __repl__(self):
+        return self.__str__()
