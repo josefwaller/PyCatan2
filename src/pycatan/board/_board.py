@@ -404,7 +404,7 @@ class Board:
     def __str__(self):
         from ._board_renderer import BoardRenderer
 
-        return BoardRenderer().get_board_as_string(self)
+        return BoardRenderer(self).get_board_as_string()
 
     def __repl__(self):
         return self.__str__()

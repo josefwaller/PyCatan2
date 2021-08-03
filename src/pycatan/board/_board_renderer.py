@@ -1,6 +1,6 @@
 from colored import stylize, fg, bg
 
-from . import _board as board
+from . import _board
 from ._coords import Coords
 from .._player import Player
 from ._hex_type import HexType
@@ -13,6 +13,7 @@ class BoardRenderer:
     """Class for rendering a board in the terminal and configuring its appearance.
 
     Args:
+        board (Board): The board to render
         player_color_map (Dict[Player, str], optional):
             A map of which colors to use for which players. Colors are string hex codes (i.e. '#FF0000')
         hex_color_map (Dict[HexType, str], optional):
@@ -44,10 +45,12 @@ class BoardRenderer:
 
     def __init__(
         self,
+        board: _board.Board,
         player_color_map={},
         hex_color_map=DEFAULT_HEX_COLORS,
         resource_color_map=DEFAULT_RESOURCE_COLORS,
     ):
+        self.board = board
         self._unused_player_colors = BoardRenderer.DEFAULT_PLAYER_COLORS
         self.player_color_map = player_color_map
         self.hex_color_map = hex_color_map
@@ -58,18 +61,22 @@ class BoardRenderer:
             self.player_color_map[player] = self._unused_player_colors.pop(0)
         return self.player_color_map[player]
 
-    def _get_path(self, chars, path, board):
+    def _get_path(self, chars, path):
         fore = "#9c7500"
         back = self.hex_color_map[HexType.DESERT]
         if path.building is not None:
             fore = self._get_player_color(path.building.owner)
-        elif frozenset(path.path_coords) in board.harbors:
+        elif frozenset(path.path_coords) in self.board.harbors:
             fore = "#000000"
         return list(map(lambda x: stylize(x, fg(fore) + bg(back)), chars))
 
-    def _get_intersection(self, char, intersection):
+    def _get_intersection(self, char, intersection, intersection_labels):
         fore = "#9c7500"
         back = self.hex_color_map[HexType.DESERT]
+        if intersection in intersection_labels:
+            return [
+                stylize(intersection_labels[intersection], fg("#000000") + bg(back))
+            ]
         if intersection.building is not None:
             fore = self._get_player_color(intersection.building.owner)
             char = (
@@ -79,11 +86,10 @@ class BoardRenderer:
             )
         return [stylize(char, fg(fore) + bg(back))]
 
-    def _get_hex_center(self, h, use_coords):
+    def _get_hex_center(self, h, hex_labels):
         space = stylize(" ", bg(self.hex_color_map[h.hex_type]))
-        if use_coords:
-            c = "%d,%d" % (h.coords.q, h.coords.r)
-            return [char for char in c.ljust(5, " ")]
+        if h in hex_labels:
+            return [char for char in hex_labels[h].ljust(5, " ")]
         if h.token_number is None:
             return [space] * 5
         token_color = (
@@ -94,7 +100,7 @@ class BoardRenderer:
         ]
         return [space] + [t for t in token_chars] + [space, space]
 
-    def _get_hex(self, board, coords, use_hex_coords):
+    def _get_hex(self, coords, hex_labels, intersection_labels):
         intersection_coords = [
             c + coords
             for c in (
@@ -106,9 +112,9 @@ class BoardRenderer:
                 Coords(0, -1),
             )
         ]
-        intersections = [board.intersections[c] for c in intersection_coords]
+        intersections = [self.board.intersections[c] for c in intersection_coords]
         paths = [
-            board.paths[
+            self.board.paths[
                 frozenset(
                     {
                         intersection_coords[i],
@@ -119,19 +125,19 @@ class BoardRenderer:
             for i in range(len(intersection_coords))
         ]
         return [
-            self._get_intersection(".", intersections[0])
-            + self._get_path(["-", "-"], paths[0], board)
-            + self._get_intersection("'", intersections[1])
-            + self._get_path(["-", "-"], paths[1], board)
-            + self._get_intersection(".", intersections[2]),
-            self._get_path(["|"], paths[5], board)
-            + self._get_hex_center(board.hexes[coords], use_hex_coords)
-            + self._get_path(["|"], paths[2], board),
-            self._get_intersection("'", intersections[5])
-            + self._get_path(["-", "-"], paths[4], board)
-            + self._get_intersection(".", intersections[4])
-            + self._get_path(["-", "-"], paths[3], board)
-            + self._get_intersection("'", intersections[3]),
+            self._get_intersection(".", intersections[0], intersection_labels)
+            + self._get_path(["-", "-"], paths[0])
+            + self._get_intersection("'", intersections[1], intersection_labels)
+            + self._get_path(["-", "-"], paths[1])
+            + self._get_intersection(".", intersections[2], intersection_labels),
+            self._get_path(["|"], paths[5])
+            + self._get_hex_center(self.board.hexes[coords], hex_labels)
+            + self._get_path(["|"], paths[2]),
+            self._get_intersection("'", intersections[5], intersection_labels)
+            + self._get_path(["-", "-"], paths[4])
+            + self._get_intersection(".", intersections[4], intersection_labels)
+            + self._get_path(["-", "-"], paths[3])
+            + self._get_intersection("'", intersections[3], intersection_labels),
         ]
 
     def _stylize_arr(self, arr, styles):
@@ -150,7 +156,7 @@ class BoardRenderer:
             )
         ]
 
-    def _get_harbor_coords(self, harbor, board):
+    def _get_harbor_coords(self, harbor):
         connected_coords = [
             [c + coord for c in Hex.CONNECTED_CORNER_OFFSETS]
             for coord in harbor.path_coords
@@ -158,7 +164,7 @@ class BoardRenderer:
         overlap = [
             c
             for c in connected_coords[0]
-            if c in connected_coords[1] and c not in board.hexes
+            if c in connected_coords[1] and c not in self.board.hexes
         ]
         hex_coords = self._get_hex_center_coords(overlap[0])
         return (hex_coords[0] + 2, hex_coords[1] + 1)
@@ -171,14 +177,12 @@ class BoardRenderer:
     def _get_hex_center_coords(self, coords):
         return ((int)(3 * coords.r), -(int)(1.34 * coords.q + 0.67 * coords.r))
 
-    def get_board_as_string(
-        self, board: board.Board, label_hexes_with_coords: bool = False
-    ) -> str:
+    def get_board_as_string(self, hex_labels={}, intersection_labels={}) -> str:
         """Get the board as a large, multiline string that includes colors.
 
         Args:
-            board (Board): The board to get the string for
-            label_hexes_with_coords (bool): Render the hex coordinate instead of the tokens
+            hex_labels (Dict[Hex, str], optional): A dictionary of labels to put on the hexes instead of the numbered tokens
+            intersection_labels (Dict[Intersection, str], optional): A dictionary of labels to put on the points
 
         Returns:
             str: The board as a string
@@ -191,21 +195,21 @@ class BoardRenderer:
 
         center = int(size[1] / 2) - 3, int(size[0] / 2) - 1
 
-        for hex_coords in board.hexes:
+        for hex_coords in self.board.hexes:
             x, y = self._get_hex_center_coords(hex_coords)
             self._copy_into_array(
                 buf,
-                self._get_hex(board, hex_coords, label_hexes_with_coords),
+                self._get_hex(hex_coords, hex_labels, intersection_labels),
                 center[0] + x,
                 center[1] + y,
             )
-        for harbor in board.harbors.values():
-            x, y = self._get_harbor_coords(harbor, board)
+        for harbor in self.board.harbors.values():
+            x, y = self._get_harbor_coords(harbor)
             self._copy_into_array(
                 buf, self._get_harbor(harbor), center[0] + x, center[1] + y
             )
 
-        x, y = self._get_hex_center_coords(board.robber)
+        x, y = self._get_hex_center_coords(self.board.robber)
         self._copy_into_array(
             buf,
             [[stylize("R", fg("#FFFFFF") + bg("#000000"))]],
@@ -215,12 +219,12 @@ class BoardRenderer:
 
         return "\n".join(["".join(row) for row in buf])
 
-    def render_board(self, board: board.Board, label_hexes_with_coords=False):
+    def render_board(self, hex_labels={}, intersection_labels={}):
         """Render the board into the terminal.
 
         Args:
-            board (Board): The board to render
-            label_hexes_with_coords (bool): Render the hex coordinate instead of the tokens
+            hex_labels (Dict[Hex, str], optional): A dictionary of labels to put on the hexes instead of the numbered tokens
+            intersection_labels (Dict[Intersection, str], optional): A dictionary of labels to put on the points
         """
-        buf = self.get_board_as_string(board, label_hexes_with_coords)
+        buf = self.get_board_as_string(hex_labels, intersection_labels)
         print(buf)
