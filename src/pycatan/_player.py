@@ -24,7 +24,7 @@ class Player:
         """Check if the player has the resources given.
 
         Args:
-            resources (Dict[Resource, int]): The resources to check that the player has
+            resources: The resources to check that the player has
 
         Returns:
             bool: True if the player has the resources, false otherwise
@@ -38,7 +38,7 @@ class Player:
         """Remove the given resources from the player's hand.
 
         Args:
-            resources (Dict[Resource, int]): The resources to remove
+            resources: The resources to remove
 
         Raises:
             NotEnoughResourcesError: If the player does not have the resources
@@ -63,8 +63,10 @@ class Player:
     def get_possible_trades(self) -> List[Dict[Resource, int]]:
         """Get a list of the possible trades for this player.
 
-        Returns: A set of the possible trades for this player, where negative numbers mean the player would
-            give away those resources and positive numbers mean the player would receive those resources
+        Returns:
+            Dict[Resource, int]:
+                The possible trades for this player.
+                Negative numbers mean the player would give away those resources, positive numbers mean the player would receive those resources
         """
         trades = []
         # Use this map to avoid including a worse deal

@@ -6,10 +6,15 @@ class DevelopmentCard(Enum):
     """A development card in a game of Catan."""
 
     KNIGHT = 0
+    """The knight card"""
     YEAR_OF_PLENTY = 1
+    """The year of plenty card"""
     ROAD_BUILDING = 2
+    """The road building card"""
     MONOPOLY = 3
+    """The monopoly card"""
     VICTORY_POINT = 4
+    """Generic type to represent the victory point cards (i.e. library)"""
 
     @staticmethod
     def get_required_resources():

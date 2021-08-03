@@ -162,12 +162,11 @@ class Board:
         Args:
             player (Player): The player who owns the settlement
             coords (Coords): The coords to put the building
-            ensure_connected (bool): Whether to ensure that the building is connected to the player's roads.
-                Defaults to True
+            ensure_connected (bool): Whether to ensure that the building is connected to the player's roads. Defaults to True
         Raises:
-                InvalidCoordsError: If `coords` is not a valid intersection
-                TooCloseToBuildingError: If the building is too close to another building
-                PositionAlreadyTakenError: If the position is already taken
+            InvalidCoordsError: If `coords` is not a valid intersection
+            TooCloseToBuildingError: If the building is too close to another building
+            PositionAlreadyTakenError: If the position is already taken
         """
         if building_type == BuildingType.SETTLEMENT:
             self.assert_valid_settlement_coords(coords, player, ensure_connected)
@@ -193,7 +192,8 @@ class Board:
     ) -> None:
         """Check whether the coordinates given are a valid place to build a settlement.
 
-            Does not return anything, but raises an error if the coordinates are not valid.
+        Does not return anything, but raises an error if the coordinates are not valid.
+
         Args:
             coords (Coords): The coordinates to check
             player (Player): The player building the settlement
@@ -242,7 +242,6 @@ class Board:
     def assert_valid_city_coords(self, player: Player, coords: Coords) -> None:
         """Check whether the coordinates given are a valid place to build a city by the player given.
 
-            Does not return anything, but raises an error.
         Args:
             player (Player): The player building the city
             coords (Coords): Where to build the city

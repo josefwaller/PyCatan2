@@ -1,5 +1,5 @@
 [flake8]
-exclude=.git,__pycache__,.nox
+exclude=.git,__pycache__,.nox,docs
 max-line-length=160
 # No docstring checks in test
 per-file-ignores =

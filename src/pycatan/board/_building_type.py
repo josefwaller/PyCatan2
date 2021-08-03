@@ -6,8 +6,11 @@ class BuildingType(Enum):
     """A type of building in a Catan game."""
 
     ROAD = 0
+    """The roads"""
     SETTLEMENT = 1
+    """The settlements"""
     CITY = 2
+    """The cities"""
 
     def get_required_resources(self):
         """Get the resources required to build this building.
