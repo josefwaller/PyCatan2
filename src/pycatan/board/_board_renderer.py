@@ -79,8 +79,11 @@ class BoardRenderer:
             )
         return [stylize(char, fg(fore) + bg(back))]
 
-    def _get_hex_center(self, h):
+    def _get_hex_center(self, h, use_coords):
         space = stylize(" ", bg(self.hex_color_map[h.hex_type]))
+        if use_coords:
+            c = "%d,%d" % (h.coords.q, h.coords.r)
+            return [char for char in c.ljust(5, " ")]
         if h.token_number is None:
             return [space] * 5
         token_color = (
@@ -91,7 +94,7 @@ class BoardRenderer:
         ]
         return [space] + [t for t in token_chars] + [space, space]
 
-    def _get_hex(self, board, coords):
+    def _get_hex(self, board, coords, use_hex_coords):
         intersection_coords = [
             c + coords
             for c in (
@@ -122,7 +125,7 @@ class BoardRenderer:
             + self._get_path(["-", "-"], paths[1], board)
             + self._get_intersection(".", intersections[2]),
             self._get_path(["|"], paths[5], board)
-            + self._get_hex_center(board.hexes[coords])
+            + self._get_hex_center(board.hexes[coords], use_hex_coords)
             + self._get_path(["|"], paths[2], board),
             self._get_intersection("'", intersections[5])
             + self._get_path(["-", "-"], paths[4], board)
@@ -168,11 +171,14 @@ class BoardRenderer:
     def _get_hex_center_coords(self, coords):
         return ((int)(3 * coords.r), -(int)(1.34 * coords.q + 0.67 * coords.r))
 
-    def get_board_as_string(self, board: board.Board) -> str:
+    def get_board_as_string(
+        self, board: board.Board, label_hexes_with_coords: bool = False
+    ) -> str:
         """Get the board as a large, multiline string that includes colors.
 
         Args:
             board (Board): The board to get the string for
+            label_hexes_with_coords (bool): Render the hex coordinate instead of the tokens
 
         Returns:
             str: The board as a string
@@ -188,7 +194,10 @@ class BoardRenderer:
         for hex_coords in board.hexes:
             x, y = self._get_hex_center_coords(hex_coords)
             self._copy_into_array(
-                buf, self._get_hex(board, hex_coords), center[0] + x, center[1] + y
+                buf,
+                self._get_hex(board, hex_coords, label_hexes_with_coords),
+                center[0] + x,
+                center[1] + y,
             )
         for harbor in board.harbors.values():
             x, y = self._get_harbor_coords(harbor, board)
@@ -206,11 +215,12 @@ class BoardRenderer:
 
         return "\n".join(["".join(row) for row in buf])
 
-    def render_board(self, board: board.Board):
+    def render_board(self, board: board.Board, label_hexes_with_coords=False):
         """Render the board into the terminal.
 
         Args:
             board (Board): The board to render
+            label_hexes_with_coords (bool): Render the hex coordinate instead of the tokens
         """
-        buf = self.get_board_as_string(board)
+        buf = self.get_board_as_string(board, label_hexes_with_coords)
         print(buf)
