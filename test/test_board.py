@@ -498,3 +498,34 @@ def test_board_into_string(snapshot):
 def test_board_prints_nicely(snapshot, capsys):
     print(BeginnerBoard())
     snapshot.assert_match(capsys.readouterr().out, "beginner_board.txt")
+
+
+def test_board_is_valid_settlement_position():
+    b = BeginnerBoard()
+    p = Player()
+    b.add_intersection_building(
+        player=p,
+        coords=Coords(1, 0),
+        ensure_connected=False,
+        building_type=BuildingType.SETTLEMENT,
+    )
+    assert not b.is_valid_settlement_coords(p, Coords(1, 1), ensure_connected=False)
+
+
+def test_get_valid_settlement_coords():
+    b = BeginnerBoard()
+    p = Player()
+    assert len(b.get_valid_settlement_coords(p, ensure_connected=False)) == len(
+        b.intersections
+    )
+    assert len(b.get_valid_settlement_coords(p)) == 0
+    b.add_intersection_building(
+        player=p,
+        coords=Coords(1, 0),
+        ensure_connected=False,
+        building_type=BuildingType.SETTLEMENT,
+    )
+    assert (
+        len(b.get_valid_settlement_coords(p, ensure_connected=False))
+        == len(b.intersections) - 4
+    )

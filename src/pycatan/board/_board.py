@@ -204,7 +204,7 @@ class Board:
             NotConnectedError: If `check_connection` is `True` and the settlement is not connected
         """
         # Check that the coords are referencing a intersection
-        if coords not in self.intersections.keys():
+        if coords not in self.intersections:
             raise InvalidCoordsError("coords must be the coordinates of a intersection")
         # Check that the intersection is empty
         if self.intersections[coords].building is not None:
@@ -257,6 +257,41 @@ class Board:
             raise RequiresSettlementError(
                 "You must update an existing settlement owned by the player into a city"
             )
+
+    def is_valid_settlement_coords(
+        self, player: Player, coords: Coords, ensure_connected
+    ):
+        """Check whether the given coordinates are a valid place for the player to build a settlement.
+
+        Args:
+            player: The player
+            coords: The coordinates to check
+            ensure_connected: Whetehr to ensure that the settlement will be connected to the player's roads
+        Returns:
+            bool: Whether the coordinates are a valid settlement location for the player
+        """
+        try:
+            self.assert_valid_settlement_coords(
+                player=player, coords=coords, ensure_connected=ensure_connected
+            )
+        except:  # noqa: E722
+            return False
+        return True
+
+    def get_valid_settlement_coords(self, player: Player, ensure_connected=True):
+        """Get all the valid settlement coordinates for the player to build a settlement.
+
+        Args:
+            player (Player): The player to check for valid settlement coordinates
+            ensure_connected (bool): Whetehr to ensure the coordinates are connected to the player's roads
+        Returns:
+            Set[Coords]: The coordinates of all the valid settlement intersections
+        """
+        return [
+            i
+            for i in self.intersections.keys()
+            if self.is_valid_settlement_coords(player, i, ensure_connected)
+        ]
 
     def get_intersection_connected_intersections(
         self, intersection
