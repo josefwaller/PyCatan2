@@ -287,11 +287,13 @@ class Board:
         Returns:
             Set[Coords]: The coordinates of all the valid settlement intersections
         """
-        return [
-            i
-            for i in self.intersections.keys()
-            if self.is_valid_settlement_coords(player, i, ensure_connected)
-        ]
+        return set(
+            [
+                i
+                for i in self.intersections.keys()
+                if self.is_valid_settlement_coords(player, i, ensure_connected)
+            ]
+        )
 
     def get_intersection_connected_intersections(
         self, intersection

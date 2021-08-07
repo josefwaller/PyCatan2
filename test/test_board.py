@@ -529,3 +529,37 @@ def test_get_valid_settlement_coords():
         len(b.get_valid_settlement_coords(p, ensure_connected=False))
         == len(b.intersections) - 4
     )
+
+
+def test_get_valid_settlement_coords_connected():
+    b = BeginnerBoard()
+    p = Player()
+    assert not b.get_valid_settlement_coords(p)
+    b.add_path_building(
+        player=p,
+        path_coords={Coords(1, 0), Coords(0, 1)},
+        ensure_connected=False,
+        building_type=BuildingType.ROAD,
+    )
+    assert b.get_valid_settlement_coords(p) == {Coords(0, 1), Coords(1, 0)}
+
+
+def test_get_valid_settlement_coords_too_close():
+    b = BeginnerBoard()
+    p = Player()
+    b.add_path_building(
+        player=p,
+        path_coords={Coords(1, 0), Coords(0, 1)},
+        building_type=BuildingType.ROAD,
+        ensure_connected=False,
+    )
+    b.add_intersection_building(
+        player=p, coords=Coords(1, 0), building_type=BuildingType.SETTLEMENT
+    )
+    assert not b.get_valid_settlement_coords(p)
+    b.add_path_building(
+        player=p,
+        path_coords={Coords(0, 1), Coords(-1, 1)},
+        building_type=BuildingType.ROAD,
+    )
+    assert b.get_valid_settlement_coords(p) == {Coords(-1, 1)}
