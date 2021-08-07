@@ -528,6 +528,20 @@ class Board:
         """
         return set(filter(lambda e: coords in e.path_coords, self.paths.values()))
 
+    def get_hex_resources_for_intersection(self, coords: Coords):
+        """Get the associated resources for the hexes around the intersection at the coords given.
+
+        Args:
+            coords (Coords): The coordinates of an intersection
+        Returns:
+            Dict[Resource, int]: The amounts of resources from the hexes around this intersection
+        """
+        resources = [
+            self.hexes[h].hex_type.get_resource()
+            for h in self.get_hexes_connected_to_intersection(coords)
+        ]
+        return {res: resources.count(res) for res in resources if res is not None}
+
     def __str__(self):
         from ._board_renderer import BoardRenderer
 

@@ -616,3 +616,20 @@ def test_get_valid_road_coords():
     assert b.get_valid_road_coords(p, connected_intersection=Coords(0, 1)) == {
         frozenset({Coords(1, 0), Coords(0, 1)})
     }
+
+
+def test_get_hex_resources_for_intersection():
+    b = BeginnerBoard()
+    assert b.get_hex_resources_for_intersection(Coords(1, 0)) == {
+        Resource.BRICK: 1,
+        Resource.WOOL: 1,
+    }
+    assert b.get_hex_resources_for_intersection(Coords(2, 0)) == {
+        Resource.BRICK: 1,
+        Resource.WOOL: 2,
+    }
+    assert b.get_hex_resources_for_intersection(Coords(3, -2)) == {
+        Resource.BRICK: 1,
+        Resource.GRAIN: 1,
+        Resource.ORE: 1,
+    }
