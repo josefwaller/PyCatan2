@@ -309,6 +309,24 @@ class Board:
             return False
         return True
 
+    def is_valid_road_coords(self, player, path_coords, ensure_connected=True):
+        """Check whether the path coordinates given are valid road coordinate for the player given.
+
+        Args:
+            player (Player): The player
+            path_coords (Set[Coords]): The coordinates of the path
+            ensure_connected (bool, optional): Whether to ensure that the road is connected to the player's existing roads/buildings. Defaults to True
+        Returns:
+            bool: Whether the player can build a road on this path
+        """
+        try:
+            self.assert_valid_road_coords(
+                player, path_coords, ensure_connected=ensure_connected
+            )
+        except:  # noqa: E722
+            return False
+        return True
+
     def get_valid_settlement_coords(self, player: Player, ensure_connected=True):
         """Get all the valid settlement coordinates for the player to build a settlement.
 
@@ -341,6 +359,31 @@ class Board:
                 if self.is_valid_city_coords(player, i)
             ]
         )
+
+    def get_valid_road_coords(
+        self, player, ensure_connected=True, connected_intersection=None
+    ):
+        """Get all the valid coordinates for the player to build a road.
+
+        Args:
+            player (Player): The player building the road
+            ensure_connected (bool, optional):
+                Whether to only return the path coordinates that are connected to the player's existing roads/settlements. Defaults to True
+            connected_intersection (Set[Coords], optional): The coords of an intersection that the potential road must be attached to. Defaults to None
+        Returns:
+            Set[frozenset[Coords]]: The coordinates of all the paths where the player can build a road.
+        """
+        to_return = set()
+        for path_coords in self.paths.keys():
+            if self.is_valid_road_coords(
+                player=player,
+                ensure_connected=ensure_connected,
+                path_coords=path_coords,
+            ):
+                if not connected_intersection or connected_intersection in path_coords:
+                    to_return.add(path_coords)
+
+        return to_return
 
     def get_intersection_connected_intersections(
         self, intersection

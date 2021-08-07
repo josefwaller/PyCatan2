@@ -598,3 +598,18 @@ def test_get_valid_city_coords():
         player=p, coords=Coords(1, 0), building_type=BuildingType.CITY
     )
     assert b.get_valid_city_coords(p) == {Coords(-1, 1)}
+
+
+def test_get_valid_road_coords():
+    b = BeginnerBoard()
+    p = Player()
+    assert not b.get_valid_road_coords(p)
+    assert len(b.get_valid_road_coords(p, ensure_connected=False)) == len(b.paths)
+    b.add_intersection_building(
+        p, Coords(1, 0), ensure_connected=False, building_type=BuildingType.SETTLEMENT
+    )
+    assert b.get_valid_road_coords(p) == {
+        frozenset({Coords(1, 0), Coords(0, 1)}),
+        frozenset({Coords(1, 0), Coords(1, -1)}),
+        frozenset({Coords(1, 0), Coords(2, 0)}),
+    }
