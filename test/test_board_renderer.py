@@ -31,3 +31,16 @@ def test_can_render_using_labels(snapshot):
         ),
         "label_intersections.txt",
     )
+
+
+def test_can_render_using_path_labels(snapshot):
+    b = BeginnerBoard()
+    snapshot.assert_match(
+        BoardRenderer(b).get_board_as_string(
+            path_labels={
+                b.paths[frozenset({Coords(1, 0), Coords(0, 1)})]: "A",
+                b.paths[frozenset({Coords(1, 0), Coords(2, 0)})]: "B",
+            }
+        ),
+        "label_paths.txt",
+    )

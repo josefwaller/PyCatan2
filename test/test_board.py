@@ -613,3 +613,6 @@ def test_get_valid_road_coords():
         frozenset({Coords(1, 0), Coords(1, -1)}),
         frozenset({Coords(1, 0), Coords(2, 0)}),
     }
+    assert b.get_valid_road_coords(p, connected_intersection=Coords(0, 1)) == {
+        frozenset({Coords(1, 0), Coords(0, 1)})
+    }
