@@ -23,6 +23,9 @@ class Coords:
     def __add__(self, other):
         return Coords(self.q + other.q, self.r + other.r)
 
+    def __sub__(self, other):
+        return Coords(self.q - other.q, self.r - other.r)
+
     def __str__(self):
         return "(q: %d, r:%d)" % (self.q, self.r)
 

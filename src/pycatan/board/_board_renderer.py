@@ -179,6 +179,31 @@ class BoardRenderer:
     def _get_hex_center_coords(self, coords):
         return ((int)(3 * coords.r), -(int)(1.34 * coords.q + 0.67 * coords.r))
 
+    def get_coords_as_xy(self, coords):
+        """Get the coordinates given as x, y position.
+
+        Args:
+            coords (Coords): The coordinates
+        Returns:
+            Tuple: The (x, y) position
+        """
+        if coords in self.board.hexes:
+            x, y = self._get_hex_center_coords(coords)
+            return (x + 2, y + 1)
+        elif coords in self.board.intersections:
+            h = list(self.board.get_hexes_connected_to_intersection(coords))[0]
+            y, x = {
+                Coords(1, 0): (3, 0),
+                Coords(0, 1): (6, 0),
+                Coords(-1, 1): (6, 2),
+                Coords(-1, 0): (3, 2),
+                Coords(0, -1): (0, 2),
+                Coords(1, -1): (0, 0),
+            }[coords - h]
+            hy, hx = self._get_hex_center_coords(h)
+            return (x + hx, y + hy)
+        return 0, 0
+
     def get_board_as_string(
         self, hex_labels={}, intersection_labels={}, path_labels={}
     ) -> str:
