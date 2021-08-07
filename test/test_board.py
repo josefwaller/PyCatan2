@@ -274,6 +274,17 @@ def test_cannot_add_city_without_settlement():
         )
 
 
+def test_cannot_add_city_on_to_of_other_city():
+    board = BeginnerBoard()
+    player = Player()
+    board.add_intersection_building(
+        player, Coords(1, 0), BuildingType.SETTLEMENT, ensure_connected=False
+    )
+    board.add_intersection_building(player, Coords(1, 0), BuildingType.CITY)
+    with pytest.raises(RequiresSettlementError):
+        board.add_intersection_building(player, Coords(1, 0), BuildingType.CITY)
+
+
 def test_cannot_add_city_on_top_of_other_player_settlement():
     board = BeginnerBoard()
     pOne = Player()
