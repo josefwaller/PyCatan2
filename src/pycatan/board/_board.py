@@ -111,6 +111,24 @@ class Board:
         if frozenset(path_coords) not in self.paths.keys():
             raise ValueError("Invalid path: Path does not exist")
 
+        if building_type is BuildingType.ROAD:
+            self.assert_valid_road_coords(player, path_coords, ensure_connected)
+
+        # Add the building
+        self.paths[frozenset(path_coords)].building = PathBuilding(
+            player, path_coords=path_coords, building_type=building_type
+        )
+
+    def assert_valid_road_coords(
+        self, player: Player, path_coords: Set[Coords], ensure_connected: bool = True
+    ):
+        """Assert that a given edge is a valid place for the player to build a road.
+
+        Args:
+            player (Player): The player
+            path_coords (Set[Coords]): The coordinates of the two intersections connected by the path
+            ensure_connected (bool, optional): Whether to assert that the path is connected to the player's existing roads or settlements
+        """
         path: Path = self.paths[frozenset(path_coords)]
         if path.building is not None:
             raise CoordsBlockedError("There is already a building on this path")
@@ -143,12 +161,8 @@ class Board:
 
                 if len(paths_connected) == 0:
                     raise NotConnectedError(
-                        "Path building is not connected to any other building"
+                        "Road is not connected to any other building"
                     )
-        # Add the building
-        self.paths[frozenset(path_coords)].building = PathBuilding(
-            player, path_coords=path_coords, building_type=building_type
-        )
 
     def add_intersection_building(
         self,
