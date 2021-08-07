@@ -253,6 +253,8 @@ class Board:
         if (
             self.intersections[coords].building is None
             or self.intersections[coords].building.owner is not player
+            or self.intersections[coords].building.building_type
+            is not BuildingType.SETTLEMENT
         ):
             raise RequiresSettlementError(
                 "You must update an existing settlement owned by the player into a city"
@@ -278,6 +280,21 @@ class Board:
             return False
         return True
 
+    def is_valid_city_coords(self, player: Player, coords: Coords):
+        """Check whether the coordinates given are valid city coordinates.
+
+        Args:
+            player (Player): The player
+            coords (Coords): The coordinates to check
+        Returns:
+            bool: Whether the coords are a valid place for the player to build a city
+        """
+        try:
+            self.assert_valid_city_coords(player=player, coords=coords)
+        except:  # noqa: E722
+            return False
+        return True
+
     def get_valid_settlement_coords(self, player: Player, ensure_connected=True):
         """Get all the valid settlement coordinates for the player to build a settlement.
 
@@ -292,6 +309,22 @@ class Board:
                 i
                 for i in self.intersections.keys()
                 if self.is_valid_settlement_coords(player, i, ensure_connected)
+            ]
+        )
+
+    def get_valid_city_coords(self, player: Player):
+        """Get all the valid city coordinates for the player to build a city.
+
+        Args:
+            player (Player): The player building the city
+        Returns
+            Set[Coords]: The coordinates of all the valid city locations
+        """
+        return set(
+            [
+                i
+                for i in self.intersections.keys()
+                if self.is_valid_city_coords(player, i)
             ]
         )
 

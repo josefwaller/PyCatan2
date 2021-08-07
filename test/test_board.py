@@ -563,3 +563,27 @@ def test_get_valid_settlement_coords_too_close():
         building_type=BuildingType.ROAD,
     )
     assert b.get_valid_settlement_coords(p) == {Coords(-1, 1)}
+
+
+def test_get_valid_city_coords():
+    b = BeginnerBoard()
+    p = Player()
+    assert not b.get_valid_city_coords(p)
+    b.add_intersection_building(
+        player=p,
+        coords=Coords(1, 0),
+        ensure_connected=False,
+        building_type=BuildingType.SETTLEMENT,
+    )
+    assert b.get_valid_city_coords(p) == {Coords(1, 0)}
+    b.add_intersection_building(
+        player=p,
+        coords=Coords(-1, 1),
+        ensure_connected=False,
+        building_type=BuildingType.SETTLEMENT,
+    )
+    assert b.get_valid_city_coords(p) == {Coords(1, 0), Coords(-1, 1)}
+    b.add_intersection_building(
+        player=p, coords=Coords(1, 0), building_type=BuildingType.CITY
+    )
+    assert b.get_valid_city_coords(p) == {Coords(-1, 1)}
