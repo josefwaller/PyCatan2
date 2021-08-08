@@ -28,7 +28,7 @@ Now the player can build a development card! Let's list the development cards th
 
     print("and you have these development cards")
     for dev_card, amount in current_player.development_cards.items():
-        print("%s: %d" % (dev_card, amount))
+        print("    %s: %d" % (dev_card, amount))
 
 Perfect! Now for the hard part - implementing these development cards.
 PyCatan doesn't implement playing development cards, but provides many utility methods that makes implementing them easier.

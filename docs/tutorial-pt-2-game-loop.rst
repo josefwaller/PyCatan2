@@ -28,16 +28,16 @@ Each player's resources is available as a dict of resource -> amount: ::
 
     print("Player %d, you have these resources:" % (current_player_num + 1))
     for res, amount in current_player.resources:
-        print("%s: %d" % (res, amount))
+        print("    %s: %d" % (res, amount))
 
 It'll look something like this: ::
 
     Player 1, you have these resources:
-    Lumber: 0
-    Brick: 0
-    Wool: 1
-    Grain: 1
-    Ore: 0
+        Lumber: 0
+        Brick: 0
+        Wool: 1
+        Grain: 1
+        Ore: 0
 
 Now in the final part of the game loop setup, let's have the player choose what they want to do.
 We'll put it in a loop so they can choose as many things as they want: ::

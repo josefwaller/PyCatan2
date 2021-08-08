@@ -26,9 +26,9 @@ Now the player can move the knight to any hex they choose! Now let's steal a car
     # Choose a player to steal a card from
     potential_players = list(game.board.get_players_on_hex(hex_coords))
     print("Choose who you want to steal from:")
-    for i in range(len(game.players)):
-        if game.players[i] in potential_players:
-            print("%d: Player %d" % (i + 1, i + 1))
+    for p in potential_players:
+        i = game.players.index(p)
+        print("%d: Player %d" % (i + 1, i + 1))
     p = int(input('->  ')) - 1
     # If they try and steal from another player they lose their chance to steal
     to_steal_from = game.players[p] if game.players[p] in potential_players else None
