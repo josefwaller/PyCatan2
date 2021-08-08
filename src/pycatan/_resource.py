@@ -14,3 +14,15 @@ class Resource(Enum):
     """The grain resource"""
     ORE = 4
     """The ore resource"""
+
+    def __repl__(self):
+        return {
+            Resource.LUMBER: "Lumber",
+            Resource.BRICK: "Brick",
+            Resource.WOOL: "Wool",
+            Resource.GRAIN: "Grain",
+            Resource.ORE: "Ore",
+        }[self]
+
+    def __str__(self):
+        return self.__repl__()

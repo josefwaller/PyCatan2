@@ -448,7 +448,6 @@ class Board:
                 resource = hex.hex_type.get_resource()
                 # Check around the hex for any settlements/cities
                 for intersection in self.get_connected_hex_intersections(hex):
-                    print(intersection.coords)
                     if intersection.building is not None:
                         owner = intersection.building.owner
                         if owner not in total_yield.keys():
@@ -541,6 +540,22 @@ class Board:
             for h in self.get_hexes_connected_to_intersection(coords)
         ]
         return {res: resources.count(res) for res in resources if res is not None}
+
+    def get_players_on_hex(self, coords: Coords):
+        """Get all the players who have a building on the edge of the given hex.
+
+        Args:
+            coords (Coords): The coords of the hex
+        Returns:
+            Set[Player]: The players with a building on the edge of the hex
+        """
+        return set(
+            [
+                i.building.owner
+                for i in self.get_connected_hex_intersections(self.hexes[coords])
+                if i.building is not None
+            ]
+        )
 
     def __str__(self):
         from ._board_renderer import BoardRenderer

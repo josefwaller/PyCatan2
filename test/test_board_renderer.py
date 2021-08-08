@@ -13,11 +13,11 @@ def test_can_get_as_string(snapshot):
     )
 
 
-def test_can_render_using_coords(snapshot):
+def test_can_render_using_hex_labels(snapshot):
     b = BeginnerBoard()
     snapshot.assert_match(
         BoardRenderer(b).get_board_as_string(
-            hex_labels={h: "%d,%d" % (h.coords.q, h.coords.r) for h in b.hexes.values()}
+            hex_labels={h: "%d" % (h.coords.q + h.coords.r) for h in b.hexes.values()}
         ),
         "label_hexes.txt",
     )

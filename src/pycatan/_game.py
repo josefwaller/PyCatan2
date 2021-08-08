@@ -116,7 +116,7 @@ class Game:
 
         # Check if the player gets longest road
         road_length = self.board.calculate_player_longest_road(player)
-        if road_length >= 3 and (
+        if road_length >= 5 and (
             self.longest_road_owner is None
             or road_length
             > self.board.calculate_player_longest_road(self.longest_road_owner)

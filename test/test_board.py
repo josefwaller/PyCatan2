@@ -633,3 +633,22 @@ def test_get_hex_resources_for_intersection():
         Resource.GRAIN: 1,
         Resource.ORE: 1,
     }
+
+
+def test_get_players_on_hex():
+    board = BeginnerBoard()
+    p1 = Player()
+    p2 = Player()
+    p3 = Player()
+    add_free_settlement(board, p1, Coords(0, 1))
+    assert board.get_players_on_hex(Coords(0, 0)) == {p1}
+    add_free_settlement(board, p2, Coords(1, 2))
+    assert board.get_players_on_hex(Coords(0, 0)) == {p1}
+    assert board.get_players_on_hex(Coords(1, 1)) == {p1, p2}
+    add_free_settlement(board, p1, Coords(1, -1))
+    assert board.get_players_on_hex(Coords(0, 0)) == {p1}
+    assert board.get_players_on_hex(Coords(1, 1)) == {p1, p2}
+    add_free_settlement(board, p3, Coords(2, 0))
+    assert board.get_players_on_hex(Coords(0, 0)) == {p1}
+    assert board.get_players_on_hex(Coords(1, 1)) == {p1, p2, p3}
+    assert board.get_players_on_hex(Coords(2, -1)) == {p1, p3}

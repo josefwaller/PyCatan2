@@ -1,4 +1,5 @@
 import pytest
+import random
 
 from pycatan import Player, Resource
 from pycatan.errors import NotEnoughResourcesError
@@ -154,3 +155,16 @@ def test_player_get_trades_best_deal():
     assert_trades_equal(p.get_possible_trades(), get_trades(Resource.LUMBER, 3))
     p.connected_harbors.add(get_harbor(resource=Resource.LUMBER))
     assert_trades_equal(p.get_possible_trades(), get_trades(Resource.LUMBER, 2))
+
+
+def test_player_get_random_resource():
+    random.seed(18)
+    p = Player()
+    p.add_resources(get_resource_hand(lumber=4, brick=5))
+    assert p.get_random_resource() == Resource.LUMBER
+    assert p.get_random_resource() == Resource.LUMBER
+    assert p.get_random_resource() == Resource.BRICK
+    assert p.get_random_resource() == Resource.BRICK
+    assert p.get_random_resource() == Resource.LUMBER
+    p.remove_resources(get_resource_hand(lumber=4, brick=5))
+    assert p.get_random_resource() is None

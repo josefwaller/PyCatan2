@@ -1,4 +1,5 @@
 from typing import Dict, List
+import random
 
 from ._resource import Resource
 from .errors import NotEnoughResourcesError
@@ -113,3 +114,20 @@ class Player:
                 "Cannot play a development card that the player doesn't have!"
             )
         self.development_cards[card] -= 1
+
+    def get_random_resource(self):
+        """Get a random resource from this player.
+
+        Weighs the different resources depending on how many the player has in their hand.
+        This is equavalent to randomly picking a resource out of the player's hand, i.e. when stealing a card via a knight card or rolling a 7.
+
+        Returns:
+            Resource: The resource
+            None: If the player has no resources
+        """
+        resources = sum([[res] * amount for res, amount in self.resources.items()], [])
+        return (
+            resources[random.randint(0, len(resources) - 1)]
+            if len(resources) > 0
+            else None
+        )

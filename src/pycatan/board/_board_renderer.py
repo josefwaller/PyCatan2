@@ -91,7 +91,7 @@ class BoardRenderer:
     def _get_hex_center(self, h, hex_labels):
         space = stylize(" ", bg(self.hex_color_map[h.hex_type]))
         if h in hex_labels:
-            return [char for char in hex_labels[h].ljust(5, " ")]
+            return [space, space, hex_labels[h], space, space]
         if h.token_number is None:
             return [space] * 5
         token_color = (
