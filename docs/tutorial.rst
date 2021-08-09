@@ -3,6 +3,7 @@ Text game Tutorial
 ******************
 
 In this tutorial, we're going to use pycatan to make a version of the game playable in the terminal.
+The finished text game is available here: https://gist.github.com/josefwaller/a3c3c19b19e46150224e7a4f34bc4dbd
 
 Initializing the Game
 ---------------------
