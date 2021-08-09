@@ -2,6 +2,7 @@
 
 [![PyPi](https://img.shields.io/pypi/v/pycatan.svg)](https://pypi.org/project/pycatan/#description)
 [![Read The Docs](https://readthedocs.org/projects/pycatan/badge)](https://pycatan.readthedocs.io/en/latest/index.html)
+[![Tests](https://github.com/josefwaller/PyCatan2/actions/workflows/tests.yaml/badge.svg)](https://github.com/josefwaller/PyCatan2/actions/workflows/tests.yaml)
 
 A python module for running games of The Settlers of Catan.
 
