@@ -1,7 +1,10 @@
 from colored import stylize, fg, bg
+from typing import Optional, Dict, Tuple
 
 from . import _board
 from ._coords import Coords
+from ._intersection import Intersection
+from ._path import Path
 from .._player import Player
 from ._hex_type import HexType
 from ._building_type import BuildingType
@@ -13,12 +16,12 @@ class BoardRenderer:
     """Class for rendering a board in the terminal and configuring its appearance.
 
     Args:
-        board (Board): The board to render
-        player_color_map (Dict[Player, str], optional):
+        board: The board to render
+        player_color_map:
             A map of which colors to use for which players. Colors are string hex codes (i.e. '#FF0000')
-        hex_color_map (Dict[HexType, str], optional):
+        hex_color_map:
             A map of which colors to use for the different types of hexes. Colors are string hex codes (i.e. '#FF00000')
-        resource_color_map (Dict[HexType, str], optional):
+        resource_color_map:
             A map of which colors to use for the different resource harbors. Colors are string hex codes (i.e. '#FF00000')
     """
 
@@ -46,9 +49,9 @@ class BoardRenderer:
     def __init__(
         self,
         board: _board.Board,
-        player_color_map={},
-        hex_color_map=DEFAULT_HEX_COLORS,
-        resource_color_map=DEFAULT_RESOURCE_COLORS,
+        player_color_map: Optional[Dict[Player, str]] = {},
+        hex_color_map: Optional[Dict[HexType, str]] = DEFAULT_HEX_COLORS,
+        resource_color_map: Optional[Dict[Resource, str]] = DEFAULT_RESOURCE_COLORS,
     ):
         self.board = board
         self._unused_player_colors = BoardRenderer.DEFAULT_PLAYER_COLORS
@@ -179,13 +182,13 @@ class BoardRenderer:
     def _get_hex_center_coords(self, coords):
         return ((int)(3 * coords.r), -(int)(1.34 * coords.q + 0.67 * coords.r))
 
-    def get_coords_as_xy(self, coords):
+    def get_coords_as_xy(self, coords: Coords) -> Tuple:
         """Get the coordinates given as x, y position.
 
         Args:
-            coords (Coords): The coordinates
+            coords: The coordinates
         Returns:
-            Tuple: The (x, y) position
+            The (x, y) position
         """
         if coords in self.board.hexes:
             x, y = self._get_hex_center_coords(coords)
@@ -205,14 +208,17 @@ class BoardRenderer:
         return 0, 0
 
     def get_board_as_string(
-        self, hex_labels={}, intersection_labels={}, path_labels={}
+        self,
+        hex_labels: Optional[Dict[Hex, str]] = {},
+        intersection_labels: Optional[Dict[Intersection, str]] = {},
+        path_labels: Optional[Dict[Path, str]] = {},
     ) -> str:
         """Get the board as a large, multiline string that includes colors.
 
         Args:
-            hex_labels (Dict[Hex, str], optional): A dictionary of labels to put on the hexes instead of the numbered tokens
-            intersection_labels (Dict[Intersection, str], optional): A dictionary of labels to put on the points
-            path_labels (Dict[Path, str], optional): A dictionary of labels to put on the paths
+            hex_labels: A dictionary of labels to put on the hexes instead of the numbered tokens
+            intersection_labels: A dictionary of labels to put on the points
+            path_labels: A dictionary of labels to put on the paths
 
         Returns:
             str: The board as a string
@@ -249,13 +255,18 @@ class BoardRenderer:
 
         return "\n".join(["".join(row) for row in buf])
 
-    def render_board(self, hex_labels={}, intersection_labels={}, path_labels={}):
+    def render_board(
+        self,
+        hex_labels: Optional[Dict[Hex, str]] = {},
+        intersection_labels: Optional[Dict[Intersection, str]] = {},
+        path_labels: Optional[Dict[Path, str]] = {},
+    ):
         """Render the board into the terminal.
 
         Args:
-            hex_labels (Dict[Hex, str], optional): A dictionary of labels to put on the hexes instead of the numbered tokens
-            intersection_labels (Dict[Intersection, str], optional): A dictionary of labels to put on the points
-            path_labels (Dict[Path, str], optional): A dictionary of labels to put on the paths
+            hex_labels: A dictionary of labels to put on the hexes instead of the numbered tokens
+            intersection_labels: A dictionary of labels to put on the points
+            path_labels: A dictionary of labels to put on the paths
         """
         buf = self.get_board_as_string(hex_labels, intersection_labels, path_labels)
         print(buf)

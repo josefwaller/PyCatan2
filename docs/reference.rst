@@ -94,6 +94,10 @@ pycatan.board.BeginnerBoard
 .. autoclass:: pycatan.board.BeginnerBoard
     :members:
 
+pycatan.board.RandomBoard
+-------------------------
+.. autoclass:: pycatan.board.RandomBoard
+
 pycatan.board.BoardRenderer
 ---------------------------
 .. autoclass:: pycatan.board.BoardRenderer

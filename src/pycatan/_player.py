@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 import random
 
 from ._resource import Resource
@@ -12,7 +12,7 @@ class Player:
     Attributes:
             resources (Dict[Resource, int]): How many of each resource this player has
             development_cards (Dict[DevelopmentCard, int]): How many of each development card this player has
-            connected_harbors (Set[Harbor]): The harbors this player is connected to. Used to determin the valid trades
+            connected_harbors (Set[Harbor]): The harbors this player is connected to. Used to determine the valid trades
     """
 
     def __init__(self):
@@ -35,7 +35,7 @@ class Player:
                 return False
         return True
 
-    def remove_resources(self, resources: Dict[Resource, int]) -> None:
+    def remove_resources(self, resources: Dict[Resource, int]):
         """Remove the given resources from the player's hand.
 
         Args:
@@ -52,11 +52,11 @@ class Player:
         for res, num in resources.items():
             self.resources[res] -= num
 
-    def add_resources(self, resources: Dict[Resource, int]) -> None:
+    def add_resources(self, resources: Dict[Resource, int]):
         """Add some resources to this player's hand.
 
         Args:
-            resources (Dict[Resource, int]): The resources to add
+            resources: The resources to add
         """
         for res, num in resources.items():
             self.resources[res] += num
@@ -65,9 +65,8 @@ class Player:
         """Get a list of the possible trades for this player.
 
         Returns:
-            Dict[Resource, int]:
-                The possible trades for this player.
-                Negative numbers mean the player would give away those resources, positive numbers mean the player would receive those resources
+            The possible trades for this player.
+            Negative numbers mean the player would give away those resources, positive numbers mean the player would receive those resources
         """
         trades = []
         # Use this map to avoid including a worse deal
@@ -105,7 +104,7 @@ class Player:
         i.e. remove it from the player's hand
 
         Args:
-            card (DevelopmentCard): The card to play
+            card: The card to play
         Raises:
             ValueError: If the player does not have the card
         """
@@ -115,15 +114,14 @@ class Player:
             )
         self.development_cards[card] -= 1
 
-    def get_random_resource(self):
+    def get_random_resource(self) -> Optional[Resource]:
         """Get a random resource from this player.
 
         Weighs the different resources depending on how many the player has in their hand.
         This is equavalent to randomly picking a resource out of the player's hand, i.e. when stealing a card via a knight card or rolling a 7.
 
         Returns:
-            Resource: The resource
-            None: If the player has no resources
+            The resource, or None if the player has no resources
         """
         resources = sum([[res] * amount for res, amount in self.resources.items()], [])
         return (

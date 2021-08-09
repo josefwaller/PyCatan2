@@ -1,6 +1,6 @@
 """A python module for holding the game state and performing game logic for games of The Settlers of Catan."""
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 
 from ._development_card import DevelopmentCard
 from ._game import Game

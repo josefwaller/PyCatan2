@@ -42,8 +42,8 @@ class RollYield:
         Also updates total_yield. Use this method instead of directly changing all_yields.
 
         Args:
-            resource (Resource): The resource the player has received
-            amount (int): The amount of the resource the player has received
+            resource: The resource the player has received
+            amount: The amount of the resource the player has received
         """
         self.total_yield[resource] += amount
         self.all_yields.add(RollYieldSource)

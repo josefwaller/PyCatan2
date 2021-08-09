@@ -1,15 +1,16 @@
-from typing import Set
+from typing import Set, Optional
 
 from ._coords import Coords
+from ._building import IntersectionBuilding
 
 
 class Intersection:
     """A intersection on the Catan board.
 
     Args:
-        coords (Coords):
+        coords:
                 The coordinates of the intersection.
-        building (IntersectionBuilding, optional):
+        building:
                 The building on the intersection.
 
     Attributes:
@@ -32,6 +33,6 @@ class Intersection:
         Coords(1, -1),
     }
 
-    def __init__(self, coords, building=None):
+    def __init__(self, coords: Coords, building: Optional[IntersectionBuilding] = None):
         self.coords = coords
         self.building = building

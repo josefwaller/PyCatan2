@@ -12,8 +12,8 @@ class Building:
             building_type (BuildingType): The type of building this is
 
     Args:
-            owner (Player): The player who owns this building
-            building_type (BuildingType): The type of building this is
+            owner: The player who owns this building
+            building_type: The type of building this is
     """
 
     def __init__(self, owner: Player, building_type: BuildingType):
@@ -30,9 +30,9 @@ class IntersectionBuilding(Building):
             coords (Coords): The coords the building is at
 
     Args:
-            owner (Player): The player who owns this building
-            building_type (BuildingType): The type of building this is
-            coords (Coords): The coords the building is at
+            owner: The player who owns this building
+            building_type: The type of building this is
+            coords: The coords the building is at
     """
 
     def __init__(self, owner: Player, building_type: BuildingType, coords: Coords):
@@ -49,9 +49,9 @@ class PathBuilding(Building):
             path_coords (Set[Coords]): The coordinates of the two intersections the building is connecting
 
     Args:
-            owner (Player): The player who owns this building
-            building_type (BuildingType): The type of building this is
-            path_coords (Set[Coords]): The coordinates of the two intersections the building is connecting
+            owner: The player who owns this building
+            building_type: The type of building this is
+            path_coords: The coordinates of the two intersections the building is connecting
     """
 
     def __init__(

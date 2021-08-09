@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from typing import Dict, Set, Optional, FrozenSet
 from itertools import product
 
 from ._coords import Coords
@@ -10,6 +10,7 @@ from .._player import Player
 from ._building import IntersectionBuilding, PathBuilding
 from ._harbor import Harbor
 from ._building_type import BuildingType
+from .._resource import Resource
 from ..errors import (
     InvalidCoordsError,
     TooCloseToBuildingError,
@@ -26,14 +27,14 @@ class Board:
     Uses a triangular grid to hold the tiles, intersections and
     paths. The Board constructor will automatically
     generate the intersections and paths from a dict of hexes,
-    assuming all the hexes tile correctly
+    assuming all the hexes tile correctly.
 
     Args:
-                    hexes (Set[Hex]):
+                    hexes:
                         The hexes on the board, keyed by their coordinates
-                    harbors (Set[Harbor]):
+                    harbors:
                         The harbors on the board
-                    robber (Coords):
+                    robber:
                         The inital coordinates of the robber. If None, then will automatically place the robber on the first
                         desert hex it can find, and raise an error if there are non
 
@@ -85,17 +86,17 @@ class Board:
         player: Player,
         building_type: BuildingType,
         path_coords: Set[Coords],
-        ensure_connected: bool = True,
+        ensure_connected: Optional[bool] = True,
     ):
         """Add an path building to the board.
 
         Do not check if the player has enough resources, or any other checks other than the building's location being valid.
 
         Args:
-            player (Player): The player adding the building
-            building_type (BuildingType): The building_type of the building being added
-            path_coords (Set[Coords]): The coordinates the path to build the building on (i.e. the coordinates of the two intersections the path connects)
-            ensure_connected (bool, optional): Whetehr to ensure that the path building is connected to another building. Defaults to True
+            player: The player adding the building
+            building_type: The building_type of the building being added
+            path_coords: The coordinates the path to build the building on (i.e. the coordinates of the two intersections the path connects)
+            ensure_connected: Whetehr to ensure that the path building is connected to another building. Defaults to True
         Raises:
             ValueError: If the path_coords are not valid
             CoordsBlockedError: If there is already a building on the path
@@ -120,14 +121,17 @@ class Board:
         )
 
     def assert_valid_road_coords(
-        self, player: Player, path_coords: Set[Coords], ensure_connected: bool = True
+        self,
+        player: Player,
+        path_coords: Set[Coords],
+        ensure_connected: Optional[bool] = True,
     ):
         """Assert that a given edge is a valid place for the player to build a road.
 
         Args:
-            player (Player): The player
-            path_coords (Set[Coords]): The coordinates of the two intersections connected by the path
-            ensure_connected (bool, optional): Whether to assert that the path is connected to the player's existing roads or settlements
+            player: The player
+            path_coords: The coordinates of the two intersections connected by the path
+            ensure_connected: Whether to assert that the path is connected to the player's existing roads or settlements
         """
         path: Path = self.paths[frozenset(path_coords)]
         if path.building is not None:
@@ -169,16 +173,16 @@ class Board:
         player: Player,
         coords: Coords,
         building_type: BuildingType,
-        ensure_connected=True,
+        ensure_connected: Optional[bool] = True,
     ):
         """Add an intersection building to the board.
 
         Args:
-            player (Player): The player who owns the settlement
-            coords (Coords): The coords to put the building
-            ensure_connected (bool): Whether to ensure that the building is connected to the player's roads. Defaults to True
+            player: The player who owns the settlement
+            coords: The coords to put the building
+            ensure_connected: Whether to ensure that the building is connected to the player's roads. Defaults to True
         Raises:
-            InvalidCoordsError: If `coords` is not a valid intersection
+            InvalidCoordsError: If coords is not a valid intersection
             TooCloseToBuildingError: If the building is too close to another building
             PositionAlreadyTakenError: If the position is already taken
         """
@@ -202,16 +206,16 @@ class Board:
                 player.connected_harbors.add(harbor)
 
     def assert_valid_settlement_coords(
-        self, coords: Coords, player: Player, ensure_connected
+        self, coords: Coords, player: Player, ensure_connected: Optional[bool]
     ) -> None:
         """Check whether the coordinates given are a valid place to build a settlement.
 
         Does not return anything, but raises an error if the coordinates are not valid.
 
         Args:
-            coords (Coords): The coordinates to check
-            player (Player): The player building the settlement
-            ensure_connected (bool): Whether the check if the settlement will be connected by road
+            coords: The coordinates to check
+            player: The player building the settlement
+            ensure_connected: Whether the check if the settlement will be connected by road
         Raises:
             TooCloseToBuildingError: If the building is too close to another building
             PositionAlreadyTakenError: If the position is already taken
@@ -253,12 +257,12 @@ class Board:
             ):
                 raise NotConnectedError("The settlement must be connected by road")
 
-    def assert_valid_city_coords(self, player: Player, coords: Coords) -> None:
+    def assert_valid_city_coords(self, player: Player, coords: Coords):
         """Check whether the coordinates given are a valid place to build a city by the player given.
 
         Args:
-            player (Player): The player building the city
-            coords (Coords): Where to build the city
+            player: The player building the city
+            coords: Where to build the city
         """
         # Check the coords are a intersection
         if coords not in self.intersections.keys():
@@ -275,8 +279,8 @@ class Board:
             )
 
     def is_valid_settlement_coords(
-        self, player: Player, coords: Coords, ensure_connected
-    ):
+        self, player: Player, coords: Coords, ensure_connected: Optional[bool]
+    ) -> bool:
         """Check whether the given coordinates are a valid place for the player to build a settlement.
 
         Args:
@@ -284,7 +288,7 @@ class Board:
             coords: The coordinates to check
             ensure_connected: Whetehr to ensure that the settlement will be connected to the player's roads
         Returns:
-            bool: Whether the coordinates are a valid settlement location for the player
+            Whether the coordinates are a valid settlement location for the player
         """
         try:
             self.assert_valid_settlement_coords(
@@ -294,14 +298,14 @@ class Board:
             return False
         return True
 
-    def is_valid_city_coords(self, player: Player, coords: Coords):
+    def is_valid_city_coords(self, player: Player, coords: Coords) -> bool:
         """Check whether the coordinates given are valid city coordinates.
 
         Args:
-            player (Player): The player
-            coords (Coords): The coordinates to check
+            player: The player
+            coords: The coordinates to check
         Returns:
-            bool: Whether the coords are a valid place for the player to build a city
+            Whether the coords are a valid place for the player to build a city
         """
         try:
             self.assert_valid_city_coords(player=player, coords=coords)
@@ -309,15 +313,20 @@ class Board:
             return False
         return True
 
-    def is_valid_road_coords(self, player, path_coords, ensure_connected=True):
+    def is_valid_road_coords(
+        self,
+        player: Player,
+        path_coords: Set[Coords],
+        ensure_connected: Optional[bool] = True,
+    ) -> bool:
         """Check whether the path coordinates given are valid road coordinate for the player given.
 
         Args:
-            player (Player): The player
-            path_coords (Set[Coords]): The coordinates of the path
-            ensure_connected (bool, optional): Whether to ensure that the road is connected to the player's existing roads/buildings. Defaults to True
+            player: The player
+            path_coords: The coordinates of the path
+            ensure_connected: Whether to ensure that the road is connected to the player's existing roads/buildings. Defaults to True
         Returns:
-            bool: Whether the player can build a road on this path
+            Whether the player can build a road on this path
         """
         try:
             self.assert_valid_road_coords(
@@ -327,14 +336,16 @@ class Board:
             return False
         return True
 
-    def get_valid_settlement_coords(self, player: Player, ensure_connected=True):
+    def get_valid_settlement_coords(
+        self, player: Player, ensure_connected: Optional[bool] = True
+    ) -> Set[Coords]:
         """Get all the valid settlement coordinates for the player to build a settlement.
 
         Args:
-            player (Player): The player to check for valid settlement coordinates
-            ensure_connected (bool): Whetehr to ensure the coordinates are connected to the player's roads
+            player: The player to check for valid settlement coordinates
+            ensure_connected: Whether to ensure the coordinates are connected to the player's roads
         Returns:
-            Set[Coords]: The coordinates of all the valid settlement intersections
+            The coordinates of all the valid settlement intersections
         """
         return set(
             [
@@ -344,13 +355,13 @@ class Board:
             ]
         )
 
-    def get_valid_city_coords(self, player: Player):
+    def get_valid_city_coords(self, player: Player) -> Set[Coords]:
         """Get all the valid city coordinates for the player to build a city.
 
         Args:
             player (Player): The player building the city
         Returns
-            Set[Coords]: The coordinates of all the valid city locations
+            The coordinates of all the valid city locations
         """
         return set(
             [
@@ -361,17 +372,20 @@ class Board:
         )
 
     def get_valid_road_coords(
-        self, player, ensure_connected=True, connected_intersection=None
-    ):
+        self,
+        player: Player,
+        ensure_connected: Optional[bool] = True,
+        connected_intersection: Optional[Coords] = None,
+    ) -> Set[FrozenSet[Coords]]:
         """Get all the valid coordinates for the player to build a road.
 
         Args:
-            player (Player): The player building the road
-            ensure_connected (bool, optional):
+            player: The player building the road
+            ensure_connected:
                 Whether to only return the path coordinates that are connected to the player's existing roads/settlements. Defaults to True
-            connected_intersection (Set[Coords], optional): The coords of an intersection that the potential road must be attached to. Defaults to None
+            connected_intersection: The coords of an intersection that the potential road must be attached to. Defaults to None
         Returns:
-            Set[frozenset[Coords]]: The coordinates of all the paths where the player can build a road.
+            The coordinates of all the paths where the player can build a road.
         """
         to_return = set()
         for path_coords in self.paths.keys():
@@ -386,15 +400,15 @@ class Board:
         return to_return
 
     def get_intersection_connected_intersections(
-        self, intersection
+        self, intersection: Intersection
     ) -> Set[Intersection]:
         """Get all the intersections connected to the intersection given by an path.
 
         Args:
-            intersection (Intersection): The intersection to get the connected intersections for
+            intersection: The intersection to get the connected intersections for
 
         Returns:
-            Set[Intersection]: The intersections that are connected to the intersection given
+            The intersections that are connected to the intersection given
         """
         connected = set()
         for c in Intersection.CONNECTED_CORNER_OFFSETS:
@@ -402,14 +416,14 @@ class Board:
                 connected.add(self.intersections[c + intersection.coords])
         return connected
 
-    def get_connected_hex_intersections(self, hex) -> Set[Intersection]:
+    def get_connected_hex_intersections(self, hex: Hex) -> Set[Intersection]:
         """Get all of the intersections that are connected to the hex.
 
         Args:
-            hex (Hex): The hex
+            hex: The hex
 
         Returns:
-            Set[Intersection]: All 6 intersections that are around this hex
+            All 6 intersections that are around this hex
         """
         return set(
             map(
@@ -418,13 +432,15 @@ class Board:
             )
         )
 
-    def get_hexes_connected_to_intersection(self, intersection_coords):
-        """Get all the hexes that are connected to the intersection with the coordinates provided.
+    def get_hexes_connected_to_intersection(
+        self, intersection_coords: Coords
+    ) -> Set[Coords]:
+        """Get all the hexes' coordinates that are connected to the intersection with the coordinates provided.
 
         Args:
-            intersection_coords (Coords): The coords of an intersection
+            intersection_coords: The coords of an intersection
         Returns:
-            Set[Hex]: The hexes connected to the intersection
+            The hexes connected to the intersection
         """
         return set(
             [
@@ -434,13 +450,13 @@ class Board:
             ]
         )
 
-    def get_yield_for_roll(self, roll) -> Dict[Player, RollYield]:
+    def get_yield_for_roll(self, roll: int) -> Dict[Player, RollYield]:
         """Calculate the resources given out for a particular roll.
 
         Args:
-            roll (int): The number rolled
+            roll: The number rolled
         Returns:
-            Dict[Player, RollYield]: The RollYield object containing the information for what each player gets, keyed by the player
+            The RollYield object containing the information for what each player gets, keyed by the player
         """
         total_yield: Dict[Player, RollYield] = {}
         for hex in self.hexes.values():
@@ -469,13 +485,13 @@ class Board:
                         )
         return total_yield
 
-    def is_valid_hex_coords(self, coords):
+    def is_valid_hex_coords(self, coords: Coords) -> bool:
         """Check whether the coordinates given are valid hex coordinates.
 
         Args:
-            coords (Coords): The coordinates
+            coords: The coordinates
         Returns:
-            bool: Whether there is a hex at those coordinates
+            Whether there is a hex at those coordinates
         """
         return len(set(filter(lambda x: x == coords, self.hexes.keys()))) != 0
 
@@ -483,9 +499,9 @@ class Board:
         """Calculate the length of the longest road segment for the player given.
 
         Args:
-            player (Player): The player to calculate the longest road for
+            player: The player to calculate the longest road for
         Returns:
-            int: The length of the ongest road segment
+            The length of the ongest road segment
         """
         paths = [
             e
@@ -523,17 +539,17 @@ class Board:
         Args:
             coords: The coordinates of the intersection
         Returns:
-            Set[Path]: A set of the paths attached to that intersection
+            A set of the paths attached to that intersection
         """
         return set(filter(lambda e: coords in e.path_coords, self.paths.values()))
 
-    def get_hex_resources_for_intersection(self, coords: Coords):
+    def get_hex_resources_for_intersection(self, coords: Coords) -> Dict[Resource, int]:
         """Get the associated resources for the hexes around the intersection at the coords given.
 
         Args:
-            coords (Coords): The coordinates of an intersection
+            coords: The coordinates of an intersection
         Returns:
-            Dict[Resource, int]: The amounts of resources from the hexes around this intersection
+            The amounts of resources from the hexes around this intersection
         """
         resources = [
             self.hexes[h].hex_type.get_resource()
@@ -541,13 +557,13 @@ class Board:
         ]
         return {res: resources.count(res) for res in resources if res is not None}
 
-    def get_players_on_hex(self, coords: Coords):
+    def get_players_on_hex(self, coords: Coords) -> Set[Player]:
         """Get all the players who have a building on the edge of the given hex.
 
         Args:
-            coords (Coords): The coords of the hex
+            coords: The coords of the hex
         Returns:
-            Set[Player]: The players with a building on the edge of the hex
+            The players with a building on the edge of the hex
         """
         return set(
             [

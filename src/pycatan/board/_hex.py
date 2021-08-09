@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, Optional
 
 from ._coords import Coords
 from ._hex_type import HexType
@@ -8,9 +8,9 @@ class Hex:
     """A hex on a Catan board.
 
     Args:
-        coords (Coords): The coordinates of this hex
-        hex_type (HexType): The type of this hex
-        token_number (int, optional): The number of the token on this hex, or None if the hext is a desert
+        coords: The coordinates of this hex
+        hex_type: The type of this hex
+        token_number: The number of the token on this hex, or None if the hex is a desert
 
     Attributes:
         CONNECTED_POINTS_OFFSETS (Set[Coords]):
@@ -29,7 +29,9 @@ class Hex:
         Coords(1, -1),
     }
 
-    def __init__(self, coords: Coords, hex_type: HexType, token_number: int = None):
+    def __init__(
+        self, coords: Coords, hex_type: HexType, token_number: Optional[int] = None
+    ):
         self.coords = coords
         self.hex_type = hex_type
         self.token_number = token_number
