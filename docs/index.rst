@@ -6,6 +6,7 @@ pycatan
     :maxdepth: 1
 
     tutorial
+    working-with-board
     reference
 
 A python module for simmulating games of The Settlers of Catan::
