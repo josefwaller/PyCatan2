@@ -11,6 +11,7 @@ from ._hex import Hex
 from ._hex_type import HexType
 from ._intersection import Intersection
 from ._path import Path
+from ._random_board import RandomBoard
 
 __all__ = [
     "Board",
@@ -26,4 +27,5 @@ __all__ = [
     "HexType",
     "Intersection",
     "Path",
+    "RandomBoard",
 ]

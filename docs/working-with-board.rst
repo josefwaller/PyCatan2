@@ -8,7 +8,7 @@ To convert to (x, y) is simple: ::
     x = sqrt(3) / 2 * r
     y = q + 0.5 * r
 
-(q, r) is simply a skewered 2D grid, where the x axis is rotated 30 degrees counter clockwise.
+(q, r) is simply a skewed 2D grid, where the x axis is rotated 30 degrees counter clockwise.
 PyCatan uses (q, r) because each intersection and hex will have its own unique integer coordinate:
 
 .. image:: images/catangrid_plain.png
