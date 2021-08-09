@@ -3,6 +3,9 @@ name = "pycatan"
 version = "1.0.0"
 description = "A library for running games of The Settlers of Catan"
 authors = ["Josef Waller <josef@siriusapplications.com>"]
+license = "MIT"
+homepage = "https://github.com/josefwaller/PyCatan2"
+repository = "https://github.com/josefwaller/PyCatan2"
 
 [tool.poetry.dependencies]
 python = "^3.8"
