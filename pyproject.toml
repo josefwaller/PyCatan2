@@ -1,20 +1,19 @@
 [tool.poetry]
 name = "pycatan"
-version = "0.2.0"
+version = "1.0.0"
 description = "A library for running games of The Settlers of Catan"
 authors = ["Josef Waller <josef@siriusapplications.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-flake8 = "^3.9.2"
-black = "^21.7b0"
 colored = "^1.4.2"
-pytest-snapshot = "^0.6.1"
-sphinx-autodoc-typehints = "^1.12.0"
-sphinx-rtd-theme = "^0.5.2"
 
 [tool.poetry.dev-dependencies]
+flake8 = "^3.9.2"
+black = "^21.7b0"
 coverage = {extras = ["toml"], version = "^5.5"}
+pytest-snapshot = "^0.6.1"
+sphinx-rtd-theme = "^0.5.2"
 pytest-cov = "^2.12.1"
 pytest = "^6.2.4"
 flake8-docstrings = "^1.6.0"
